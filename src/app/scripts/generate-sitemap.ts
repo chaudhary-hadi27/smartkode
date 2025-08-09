@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 (async () => {
   const sitemap = new SitemapStream({ hostname: 'https://smartkode.io' });
-  const writeStream = createWriteStream(resolve(__dirname, '../../../public/sitemap.xml'));
+  const writeStream = createWriteStream(resolve(__dirname, '../../public/sitemap.xml'));
 
   sitemap.pipe(writeStream);
 

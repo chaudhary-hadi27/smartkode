@@ -44,20 +44,6 @@ export default function TermsFooter({
             </a>
             <span className="text-gray-700">•</span>
             <a 
-              href="/cookies"
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
-            >
-              Cookie Policy
-            </a>
-            <span className="text-gray-700">•</span>
-            <a 
-              href="/acceptable-use"
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
-            >
-              Acceptable Use
-            </a>
-            <span className="text-gray-700">•</span>
-            <a 
               href="/contact"
               className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
             >
