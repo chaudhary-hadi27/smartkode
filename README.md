@@ -40,7 +40,7 @@ We aim to empower people and organizations by delivering cutting-edge AI solutio
 ---
 
 ## 📞 Contact Us
-📧 Email: hello@smartkode.io  
+📧 Email: info@smartkode.io  
 🌐 Website: [smartkode.io](https://smartkode.io)   
 💼 LinkedIn: [SmartKode](https://linkedin.com/company/smartkode)  
 
