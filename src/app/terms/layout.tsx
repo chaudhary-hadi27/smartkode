@@ -1,0 +1,20 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | SmartKode Terms',
+    default: 'Terms of Service | SmartKode',
+  },
+};
+
+export default function TermsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
+}
