@@ -360,10 +360,6 @@ const PrivacyContent: React.FC<PrivacyContentProps> = ({
                   <p className="font-medium text-white mb-1 text-sm sm:text-base">General Inquiries</p>
                   <p className="text-gray-400 text-xs sm:text-sm">We respond within 3 days</p>
                 </div>
-                <div className="p-3 sm:p-4 bg-white/5 rounded-lg border border-white/10">
-                  <p className="font-medium text-white mb-1 text-sm sm:text-base">Urgent Privacy Matters</p>
-                  <p className="text-gray-400 text-xs sm:text-sm">We respond within 24 hours</p>
-                </div>
               </div>
             </div>
           </div>
