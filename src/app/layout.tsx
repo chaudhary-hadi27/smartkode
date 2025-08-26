@@ -16,13 +16,19 @@ export const metadata: Metadata = {
   title: "SmartKode AI – Where Intelligence Meets Innovation",
   description:
     "SmartKode is an AI-driven company building intelligent APIs, chatbots, and automation solutions using cutting-edge machine learning and generative AI technologies.",
-    icons: {
-    icon: "/favicon.ico",
-    },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/favicon.png", type: "image/png", sizes: "48x48" },
+    ],
+  },
   keywords: [
     "SmartKode",
     "AI",
     "SmartCode",
+    "SMARTKODE",
+    "smartcode",
+    "smartkode",
     "Smart Kode",
     "Smart Kode AI",
     "SmartKode AI",

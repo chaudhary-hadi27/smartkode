@@ -1,398 +1,538 @@
 "use client";
-import React, { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
-import { 
-  Brain, 
-  Code, 
-  BarChart3, 
-  Zap, 
+import React, { useState, useEffect } from "react";
+import ReCAPTCHA from "react-google-recaptcha"; // ADD THIS IMPORT
+import toast, { Toaster } from "react-hot-toast"; // ADD THIS IMPORT
+import {
+  Brain,
+  Code,
+  BarChart3,
+  Zap,
   MessageCircle,
-  ArrowRight,
   TrendingUp,
   Server,
-  Palette
-} from 'lucide-react';
+  Palette,
+  LucideIcon,
+} from "lucide-react";
 
-// Type definitions
-interface MousePosition {
-  x: number;
-  y: number;
+// Type definitions for gtag
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'event',
+      eventName: string,
+      parameters?: Record<string, unknown>
+    ) => void;
+  }
 }
 
 interface Service {
   id: string;
-  label: string;
+  title: string;
   description: string;
   image: string;
-  highlights: string[];
-  icon: React.ReactElement;
+  features: string[];
+  icon: LucideIcon;
+  seoKeywords: string[];
 }
-
-interface TechLogo {
-  name: string;
-  image: string;
-}
-
-// Constants
-const MOBILE_BREAKPOINT = 768;
 
 const ServicesPage: React.FC = () => {
-  // State management
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(
+    new Set()
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null); // ADD CAPTCHA STATE
+  const [success, setSuccess] = useState(false); // ADD SUCCESS STATE
 
-  // Memoized services data
-  const services = useMemo<Service[]>(() => [
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  // Enhanced services data with SEO keywords
+  const services: Service[] = [
     {
       id: "ai",
-      label: "AI Development",
-      description: "Custom AI models that solve real business challenges. From machine learning to computer vision, we build intelligent systems that work.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343879/ai_j8vo7b.jpg",
-      highlights: [
+      title: "AI Development",
+      description:
+        "Custom AI models that solve real business challenges. From machine learning to computer vision, we build intelligent systems that work.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343879/ai_j8vo7b.jpg",
+      features: [
         "Custom Machine Learning Models",
         "Computer Vision & NLP",
-        "AI Model Deployment"
+        "AI Model Deployment",
       ],
-      icon: <Brain className="w-5 h-5" />
+      icon: Brain,
+      seoKeywords: ["AI development", "machine learning", "computer vision", "NLP"],
     },
     {
       id: "web",
-      label: "Web Development",
-      description: "High-performance web platforms built with modern frameworks. Fast, responsive, and designed to scale with your business.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343887/web_hlmskm.jpg",
-      highlights: [
+      title: "Web Development",
+      description:
+        "High-performance web platforms built with modern frameworks. Fast, responsive, and designed to scale with your business.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343887/web_hlmskm.jpg",
+      features: [
         "Next.js & React Applications",
         "Full-Stack Development",
-        "Performance Optimization"
+        "Performance Optimization",
       ],
-      icon: <Code className="w-5 h-5" />
+      icon: Code,
+      seoKeywords: ["web development", "Next.js", "React", "full-stack"],
     },
     {
       id: "chatbot",
-      label: "Chatbot Development",
-      description: "Intelligent chatbots that engage customers 24/7. Deploy across web, WhatsApp, and messaging platforms.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343734/chatbot_pd1xt8.jpg",
-      highlights: [
+      title: "Chatbot Development",
+      description:
+        "Intelligent chatbots that engage customers 24/7. Deploy across web, WhatsApp, and messaging platforms.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343734/chatbot_pd1xt8.jpg",
+      features: [
         "GPT-Powered Chatbots",
         "Multi-Platform Integration",
-        "Natural Conversations"
+        "Natural Conversations",
       ],
-      icon: <MessageCircle className="w-5 h-5" />
+      icon: MessageCircle,
+      seoKeywords: ["chatbot development", "GPT chatbots", "WhatsApp bot"],
     },
     {
       id: "automation",
-      label: "Automation Services",
-      description: "Automate repetitive tasks and streamline workflows. Focus on what matters while we handle the routine work.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343696/automation_hq82sz.jpg",
-      highlights: [
+      title: "Automation Services",
+      description:
+        "Automate repetitive tasks and streamline workflows. Focus on what matters while we handle the routine work.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343696/automation_hq82sz.jpg",
+      features: [
         "Process Automation",
         "Workflow Integration",
-        "Custom Bot Development"
+        "Custom Bot Development",
       ],
-      icon: <Zap className="w-5 h-5" />
+      icon: Zap,
+      seoKeywords: ["process automation", "workflow automation", "RPA"],
     },
     {
       id: "data",
-      label: "Data Analytics",
-      description: "Transform data into actionable insights. We build dashboards and analytics systems that help you make better decisions.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343587/data_sa6wwg.jpg",
-      highlights: [
+      title: "Data Analytics",
+      description:
+        "Transform data into actionable insights. We build dashboards and analytics systems that help you make better decisions.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343587/data_sa6wwg.jpg",
+      features: [
         "Real-Time Dashboards",
         "Business Intelligence",
-        "Predictive Analytics"
+        "Predictive Analytics",
       ],
-      icon: <BarChart3 className="w-5 h-5" />
+      icon: BarChart3,
+      seoKeywords: ["data analytics", "business intelligence", "dashboards"],
     },
     {
       id: "marketing",
-      label: "Digital Marketing",
-      description: "Strategic digital marketing campaigns that drive growth. From social media to SEO, we help you reach your target audience effectively.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903869/digital-marketing_u4rd2a.webp",
-      highlights: [
+      title: "Digital Marketing",
+      description:
+        "Strategic digital marketing campaigns that drive growth. From social media to SEO, we help you reach your target audience effectively.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903869/digital-marketing_u4rd2a.webp",
+      features: [
         "Social Media Marketing",
         "SEO & Content Strategy",
-        "PPC Campaign Management"
+        "PPC Campaign Management",
       ],
-      icon: <TrendingUp className="w-5 h-5" />
+      icon: TrendingUp,
+      seoKeywords: ["digital marketing", "SEO services", "social media marketing"],
     },
     {
       id: "devops",
-      label: "DevOps",
-      description: "Streamline your development pipeline with modern DevOps practices. Deploy faster, scale better, and maintain reliability.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753904008/devops_ybbrwv.jpg",
-      highlights: [
+      title: "DevOps",
+      description:
+        "Streamline your development pipeline with modern DevOps practices. Deploy faster, scale better, and maintain reliability.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753904008/devops_ybbrwv.jpg",
+      features: [
         "CI/CD Pipeline Setup",
         "Cloud Infrastructure",
-        "Monitoring & Deployment"
+        "Monitoring & Deployment",
       ],
-      icon: <Server className="w-5 h-5" />
+      icon: Server,
+      seoKeywords: ["DevOps services", "CI/CD", "cloud infrastructure"],
     },
     {
       id: "uiux",
-      label: "UI/UX Design",
-      description: "Create intuitive and beautiful user experiences. We design interfaces that users love and businesses need.",
-      image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903709/UI-UX_tp8ivo.webp",
-      highlights: [
+      title: "UI/UX Design",
+      description:
+        "Create intuitive and beautiful user experiences. We design interfaces that users love and businesses need.",
+      image:
+        "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903709/UI-UX_tp8ivo.webp",
+      features: [
         "User Experience Research",
         "Interface Design",
-        "Prototyping & Testing"
+        "Prototyping & Testing",
       ],
-      icon: <Palette className="w-5 h-5" />
-    }
-  ], []);
+      icon: Palette,
+      seoKeywords: ["UI/UX design", "user experience", "interface design"],
+    },
+  ];
 
-  // Memoized tech logos data
-  const techLogos = useMemo<TechLogo[]>(() => [
-    { name: "OpenAI GPT", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345359/gpt_ovguag.png" },
-    { name: "PyTorch", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345382/pytorch_kedo8g.png" },
-    { name: "Hugging Face", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345433/hugging-face_pix9sx.png" },
-    { name: "OpenCV", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345368/opencv_gkee83.png" },
-    { name: "Next.js", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345440/nextjs_jevpfr.jpg" },
-    { name: "SQL", image: "https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753345302/sql_nrxvnk.png" }
-  ], []);
-
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = (): void => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Loading animation
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Mouse position tracking (desktop only)
-  useEffect(() => {
-    if (isMobile) return;
-
-    const handleMouseMove = (e: MouseEvent): void => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isMobile]);
-
-  // Intersection Observer for animations
+  // Enhanced intersection observer with better performance
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setVisibleSections(prev => new Set(prev).add(entry.target.id));
+            setVisibleSections((prev) => new Set(prev).add(entry.target.id));
           }
         });
       },
-      { threshold: 0.1 }
+      { 
+        threshold: 0.1,
+        rootMargin: '50px 0px -50px 0px'
+      }
     );
 
-    const sections = document.querySelectorAll('[data-animate]');
-    sections.forEach(section => observer.observe(section));
+    const sections = document.querySelectorAll("[data-animate]");
+    sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
   }, []);
 
-  // Render hero section
-  const renderHeroSection = (): React.ReactElement => (
-    <section 
-      id="hero"
-      data-animate
-      className="relative min-h-screen flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 pt-20 pb-16 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden"
-    >
-      {/* Mouse follower effect */}
-      {!isMobile && (
-        <div 
-          className="absolute pointer-events-none w-96 h-96 rounded-full bg-gradient-to-r from-white/5 to-gray-300/10 blur-3xl transition-all duration-700 ease-out"
-          style={{
-            left: mousePosition.x - 192,
-            top: mousePosition.y - 192,
-          }}
-          aria-hidden="true"
-        />
-      )}
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-      {/* Animated background particles */}
-      {!isMobile && (
-        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/20 rounded-full animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-gray-400/30 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-white/15 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-gray-300/25 rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
-        </div>
-      )}
+  // UPDATED SUBMIT HANDLER TO USE YOUR ACTUAL API
+  const handleSubmit = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSuccess(false);
 
-      <div className={`relative z-10 max-w-4xl transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <div className="inline-block mb-6">
-          <span className="bg-gray-800 text-white px-6 py-2 rounded-full text-sm font-bold tracking-wider uppercase border border-gray-700">
-            Enterprise Solutions
-          </span>
-        </div>
-        
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-8">
-          <span className="text-white">Enterprise AI Solutions.</span>
-          <br />
-          <span className="text-gray-400">Engineered for Impact.</span>
-        </h1>
-        
-        <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
-          We help ambitious companies transform with intelligent software, AI automation, and future-ready platforms.
-        </p>
+    const data = {
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+      token: captcha,
+    };
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <button 
-            onClick={() => {
-              const servicesSection = document.getElementById('service-0');
-              servicesSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-            className="bg-white text-black px-8 py-4 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-300 flex items-center text-lg hover:scale-105 shadow-lg hover:shadow-xl"
-          >
-            Get Started <ArrowRight className="w-5 h-5 ml-2" />
-          </button>
-        </div>
-      </div>
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+      });
 
-      {/* Tech logos section */}
-      <div className={`relative z-10 w-full max-w-5xl mt-20 transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        <p className="text-sm text-gray-400 uppercase tracking-widest mb-8 text-center">
-          Trusted Technologies
-        </p>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-8 items-center justify-items-center">
-          {techLogos.map((tech) => (
-            <div 
-              key={tech.name}
-              className="group relative"
-            >
-              <Image 
-                src={tech.image} 
-                alt={tech.name}
-                width={64}
-                height={64}
-                className="w-12 h-12 sm:w-16 sm:h-16 object-contain opacity-60 hover:opacity-100 transition-all duration-300 group-hover:scale-110"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+      setIsSubmitting(false);
 
-  // Render service section
-  const renderServiceSection = (service: Service, index: number): React.ReactElement => {
-    const isVisible = visibleSections.has(`service-${index}`);
-    const isReversed = index % 2 === 1;
+      if (res.ok) {
+        toast.success("Message sent successfully!");
+        setFormData({ name: "", email: "", message: "" });
+        setCaptcha(null);
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 5000);
+      } else {
+        const errorData = await res.json();
+        console.error("Error response:", errorData);
+        toast.error("Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error("Network error:", error);
+      toast.error("Network error. Please try again later.");
+    }
+  };
 
-    return (
-      <section
-        key={service.id}
-        id={`service-${index}`}
-        data-animate
-        className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8 py-20"
-      >
-        <div className="max-w-7xl mx-auto w-full">
-          <div className={`grid lg:grid-cols-2 gap-16 items-center ${isReversed ? 'lg:grid-flow-col-dense' : ''}`}>
-            
-            {/* Content */}
-            <div className={`${isReversed ? 'lg:col-start-2' : ''} ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white leading-tight">
-                {service.label}
-              </h2>
-              
-              <p className="text-gray-300 text-xl mb-8 leading-relaxed">
-                {service.description}
-              </p>
-
-              {/* Highlights */}
-              <div className="space-y-4 mb-10">
-                {service.highlights.map((highlight, i) => (
-                  <div key={i} className="flex items-center text-gray-200 group">
-                    <div className="w-2 h-2 bg-white rounded-full mr-4 flex-shrink-0 group-hover:scale-125 transition-transform duration-300"></div>
-                    <span className="text-lg font-medium group-hover:text-white transition-colors duration-300">{highlight}</span>
-                  </div>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => {
-                  // Navigate to service detail on same page
-                  window.location.href = `/services/${service.id}`;
-                }}
-                className="bg-gradient-to-r from-white to-gray-100 text-black px-8 py-4 rounded-lg font-semibold hover:from-gray-100 hover:to-white transition-all duration-300 flex items-center text-lg hover:scale-105 shadow-lg hover:shadow-xl transform-gpu"
-              >
-                Learn More <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-              </button>
-            </div>
-
-            {/* Image */}
-            <div className={`${isReversed ? 'lg:col-start-1' : ''} ${isVisible ? 'animate-fade-in-right' : 'opacity-0'}`}>
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-700/30 to-gray-800/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <Image
-                  src={service.image}
-                  alt={service.label}
-                  width={600}
-                  height={400}
-                  className="relative w-full h-80 lg:h-96 object-cover rounded-2xl shadow-2xl border border-gray-700 group-hover:scale-105 transition-all duration-500 group-hover:border-gray-600"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl group-hover:from-black/20 transition-all duration-500"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
+  // SEO structured data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Enterprise Technology Services",
+    "description": "We build intelligent systems that transform businesses. From AI development to cloud infrastructure — we deliver scalable, secure, and future-ready solutions.",
+    "serviceType": services.map(service => service.title),
+    "areaServed": "Worldwide",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Technology Services",
+      "itemListElement": services.map((service) => ({
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": service.title,
+          "description": service.description
+        }
+      }))
+    }
   };
 
   return (
-    <div className="bg-black text-white overflow-hidden min-h-screen">
-      {/* Hero Section */}
-      {renderHeroSection()}
+    <>
+      <Toaster position="top-right" /> {/* ADD TOAST CONTAINER */}
       
-      {/* Services Sections */}
-      {services.map((service, index) => renderServiceSection(service, index))}
+      {/* SEO Head - In a real Next.js app, this would go in the Head component */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      
+      <div className="bg-black text-white min-h-screen">
+        <div className="px-4 sm:px-6 lg:px-8 xl:px-16 py-8 sm:py-12 lg:py-16">
+          {/* Hero Section - Enhanced responsive design */}
+          <header className="text-center mb-16 sm:mb-20 lg:mb-24 max-w-6xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 sm:mb-8 leading-tight tracking-tight">
+              Enterprise Technology Services
+            </h1>
+            <p className="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl mx-auto px-4">
+              We build intelligent systems that transform businesses. From AI
+              development to cloud infrastructure — we deliver scalable, secure, and
+              future-ready solutions.
+            </p>
+          </header>
 
-      {/* Custom animations */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fade-in-right {
-          from {
-            opacity: 0;
-            transform: translateX(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out forwards;
-        }
-        
-        .animate-fade-in-right {
-          animation: fade-in-right 0.8s ease-out forwards;
-        }
-      `}</style>
-    </div>
+          {/* Services Sections - Enhanced responsive layout */}
+          <main>
+            {services.map((service, index) => (
+              <section
+                key={service.id}
+                id={`service-${index}`}
+                data-animate
+                className={`flex flex-col ${
+                  index % 2 !== 0 ? "lg:flex-row-reverse" : "lg:flex-row"
+                } items-center gap-8 sm:gap-12 lg:gap-16 xl:gap-20 mb-20 sm:mb-24 lg:mb-32`}
+                role="region"
+                aria-labelledby={`${service.id}-heading`}
+              >
+                {/* Image Container - Optimized for all screen sizes */}
+                <div
+                  className={`w-full lg:w-1/2 transition-all duration-700 ease-out ${
+                    visibleSections.has(`service-${index}`)
+                      ? "opacity-100 translate-x-0"
+                      : `opacity-0 ${
+                          index % 2 !== 0 ? "translate-x-8 lg:translate-x-12" : "-translate-x-8 lg:-translate-x-12"
+                        }`
+                  }`}
+                >
+                  <div className="relative group overflow-hidden rounded-xl sm:rounded-2xl shadow-2xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-900/20 via-transparent to-black/40 z-10 pointer-events-none"></div>
+                    <picture>
+                      <img
+                        src={service.image}
+                        alt={`${service.title} - Professional ${service.title.toLowerCase()} services`}
+                        className={`w-full transition-all duration-700 group-hover:scale-105 ${
+                          // Smaller heights for mobile to show text properly, larger for desktop
+                          service.id === 'ai' || service.id === 'automation' || service.id === 'data' || service.id === 'uiux'
+                            ? 'h-48 sm:h-64 md:h-80 lg:h-[420px] xl:h-[480px] object-cover'
+                            : 'h-56 sm:h-72 md:h-88 lg:h-[450px] xl:h-[500px] object-cover'
+                        }`}
+                        loading={index < 2 ? "eager" : "lazy"}
+                        decoding="async"
+                        style={{
+                          objectPosition: service.id === 'ai' ? 'center 20%' :
+                                        service.id === 'web' ? 'center center' :
+                                        service.id === 'chatbot' ? 'center center' :
+                                        service.id === 'automation' ? 'center 70%' :
+                                        service.id === 'data' ? 'center 30%' :
+                                        service.id === 'marketing' ? 'center center' :
+                                        service.id === 'devops' ? 'center center' :
+                                        service.id === 'uiux' ? 'center 25%' : 'center center'
+                        }}
+                      />
+                    </picture>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 z-20"></div>
+                  </div>
+                </div>
+
+                {/* Content - Enhanced typography and spacing */}
+                <div
+                  className={`w-full lg:w-1/2 transition-all duration-700 delay-200 ease-out ${
+                    visibleSections.has(`service-${index}`)
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-8"
+                  }`}
+                >
+                  <div className="flex items-center mb-6 sm:mb-8">
+                    <div className="w-16 h-16 sm:w-18 sm:h-18 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl flex items-center justify-center mr-6 text-white shadow-xl border border-zinc-700/50">
+                      <service.icon className="w-8 h-8 sm:w-9 sm:h-9" />
+                    </div>
+                  </div>
+
+                  <h2 
+                    id={`${service.id}-heading`}
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-white leading-tight tracking-tight"
+                  >
+                    {service.title}
+                  </h2>
+
+                  <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed">
+                    {service.description}
+                  </p>
+
+                  <ul className="space-y-4 mb-8 sm:mb-10" role="list">
+                    {service.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start text-gray-300">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center mr-4 mt-0.5 flex-shrink-0 border border-zinc-600/50">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                        <span className="text-sm sm:text-base md:text-lg leading-relaxed">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    onClick={() => {
+                      // In production, this would navigate to the service detail page
+                      if (window.gtag) {
+                        window.gtag('event', 'service_interest', {
+                          service_name: service.title,
+                          service_id: service.id
+                        });
+                      }
+                      alert(`Navigating to ${service.title} details page...`);
+                    }}
+                    className="group bg-gradient-to-r from-white to-gray-100 text-black px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                    aria-label={`Learn more about ${service.title}`}
+                  >
+                    Learn More
+                    <div className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+              </section>
+            ))}
+          </main>
+
+          {/* Contact CTA Section - NOW WORKING WITH YOUR API */}
+          <section
+            id="contact"
+            className="max-w-6xl mx-auto mt-16 sm:mt-20 lg:mt-24 text-center bg-zinc-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 shadow-2xl border border-zinc-800"
+            role="region"
+            aria-labelledby="contact-heading"
+          >
+            <h2 id="contact-heading" className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
+              Ready to Transform Your Business?
+            </h2>
+            <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 leading-relaxed max-w-4xl mx-auto">
+              Let&apos;s discuss how our technology solutions can accelerate your growth
+              and streamline your operations.
+            </p>
+            <p className="text-sm text-gray-400 mb-6 sm:mb-8 flex items-center justify-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Trusted by businesses worldwide
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 text-left max-w-2xl mx-auto">
+              <div>
+                <label htmlFor="name" className="sr-only">Your Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  placeholder="Your Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm sm:text-base"
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="email" className="sr-only">Your Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="Your Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm sm:text-base"
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="message" className="sr-only">Project Details</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  placeholder="Tell us about your project..."
+                  rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all resize-vertical text-sm sm:text-base"
+                  disabled={isSubmitting}
+                ></textarea>
+              </div>
+
+              {/* ADD RECAPTCHA HERE */}
+              <div className="pt-2 flex justify-center">
+                <ReCAPTCHA
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                  theme="dark"
+                  onChange={(token) => setCaptcha(token)}
+                />
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !captcha} // DISABLE UNTIL CAPTCHA IS SOLVED
+                className="bg-white text-black px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5" />
+                    Kickstart My Project
+                  </>
+                )}
+              </button>
+
+              {/* SUCCESS MESSAGE */}
+              {success && (
+                <div className="text-center p-4 bg-green-900/20 border border-green-700/50 rounded-xl">
+                  <p className="text-green-400 font-medium">
+                    Message sent successfully! We&apos;ll get back to you soon.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 sm:gap-8 justify-center items-center text-sm sm:text-base">
+              <a
+                href="mailto:info@smartkode.io"
+                className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30"
+                aria-label="Send us an email"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Email Us
+              </a>
+              <a
+                href="https://wa.me/+923004479894"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30"
+                aria-label="Chat with us on WhatsApp"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Chat on WhatsApp
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </>
   );
 };
 
