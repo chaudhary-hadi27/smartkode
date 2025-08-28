@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import ReCAPTCHA from "react-google-recaptcha"; // ADD THIS IMPORT
-import toast, { Toaster } from "react-hot-toast"; // ADD THIS IMPORT
+import { useRouter } from "next/navigation";
+import ReCAPTCHA from "react-google-recaptcha";
+import toast, { Toaster } from "react-hot-toast";
 import {
   Brain,
   Code,
@@ -11,14 +12,14 @@ import {
   TrendingUp,
   Server,
   Palette,
-  LucideIcon,
+  type LucideIcon,
 } from "lucide-react";
 
 // Type definitions for gtag
 declare global {
   interface Window {
     gtag?: (
-      command: 'event',
+      command: "event",
       eventName: string,
       parameters?: Record<string, unknown>
     ) => void;
@@ -33,15 +34,17 @@ interface Service {
   features: string[];
   icon: LucideIcon;
   seoKeywords: string[];
+  route: string; // Added route property
 }
 
 const ServicesPage: React.FC = () => {
+  const router = useRouter();
   const [visibleSections, setVisibleSections] = useState<Set<string>>(
     new Set()
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captcha, setCaptcha] = useState<string | null>(null); // ADD CAPTCHA STATE
-  const [success, setSuccess] = useState(false); // ADD SUCCESS STATE
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -49,7 +52,7 @@ const ServicesPage: React.FC = () => {
     message: "",
   });
 
-  // Enhanced services data with SEO keywords
+  // Enhanced services data with SEO keywords and routes
   const services: Service[] = [
     {
       id: "ai",
@@ -65,6 +68,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: Brain,
       seoKeywords: ["AI development", "machine learning", "computer vision", "NLP"],
+      route: "/services/ai",
     },
     {
       id: "web",
@@ -80,6 +84,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: Code,
       seoKeywords: ["web development", "Next.js", "React", "full-stack"],
+      route: "/services/web",
     },
     {
       id: "chatbot",
@@ -95,6 +100,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: MessageCircle,
       seoKeywords: ["chatbot development", "GPT chatbots", "WhatsApp bot"],
+      route: "/services/chatbot",
     },
     {
       id: "automation",
@@ -110,6 +116,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: Zap,
       seoKeywords: ["process automation", "workflow automation", "RPA"],
+      route: "/services/automation",
     },
     {
       id: "data",
@@ -125,6 +132,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: BarChart3,
       seoKeywords: ["data analytics", "business intelligence", "dashboards"],
+      route: "/services/data",
     },
     {
       id: "marketing",
@@ -140,6 +148,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: TrendingUp,
       seoKeywords: ["digital marketing", "SEO services", "social media marketing"],
+      route: "/services/marketing",
     },
     {
       id: "devops",
@@ -155,6 +164,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: Server,
       seoKeywords: ["DevOps services", "CI/CD", "cloud infrastructure"],
+      route: "/services/devops",
     },
     {
       id: "uiux",
@@ -170,6 +180,7 @@ const ServicesPage: React.FC = () => {
       ],
       icon: Palette,
       seoKeywords: ["UI/UX design", "user experience", "interface design"],
+      route: "/services/uiux",
     },
   ];
 
@@ -183,9 +194,9 @@ const ServicesPage: React.FC = () => {
           }
         });
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: '50px 0px -50px 0px'
+        rootMargin: "50px 0px -50px 0px",
       }
     );
 
@@ -200,6 +211,32 @@ const ServicesPage: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  // Handle service navigation
+  const handleServiceNavigation = (service: Service) => {
+    // Track analytics
+    if (window.gtag) {
+      window.gtag("event", "service_interest", {
+        service_name: service.title,
+        service_id: service.id,
+      });
+    }
+
+    // Navigate to the service page/section
+    if (service.route.startsWith("#")) {
+      // For hash routes, scroll to the section if it exists on current page
+      const element = document.querySelector(service.route);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      } else {
+        // If section doesn't exist on current page, navigate to it
+        router.push(service.route);
+      }
+    } else {
+      // For full routes, use router navigation
+      router.push(service.route);
+    }
   };
 
   // UPDATED SUBMIT HANDLER TO USE YOUR ACTUAL API
@@ -246,36 +283,37 @@ const ServicesPage: React.FC = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
-    "name": "Enterprise Technology Services",
-    "description": "We build intelligent systems that transform businesses. From AI development to cloud infrastructure — we deliver scalable, secure, and future-ready solutions.",
-    "serviceType": services.map(service => service.title),
-    "areaServed": "Worldwide",
-    "hasOfferCatalog": {
+    name: "Enterprise Technology Services",
+    description:
+      "We build intelligent systems that transform businesses. From AI development to cloud infrastructure — we deliver scalable, secure, and future-ready solutions.",
+    serviceType: services.map((service) => service.title),
+    areaServed: "Worldwide",
+    hasOfferCatalog: {
       "@type": "OfferCatalog",
-      "name": "Technology Services",
-      "itemListElement": services.map((service) => ({
+      name: "Technology Services",
+      itemListElement: services.map((service) => ({
         "@type": "Offer",
-        "itemOffered": {
+        itemOffered: {
           "@type": "Service",
-          "name": service.title,
-          "description": service.description
-        }
-      }))
-    }
+          name: service.title,
+          description: service.description,
+        },
+      })),
+    },
   };
 
   return (
     <>
-      <Toaster position="top-right" /> {/* ADD TOAST CONTAINER */}
-      
+      <Toaster position="top-right" />
+
       {/* SEO Head - In a real Next.js app, this would go in the Head component */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData)
+          __html: JSON.stringify(structuredData),
         }}
       />
-      
+
       <div className="bg-black text-white min-h-screen">
         <div className="px-4 sm:px-6 lg:px-8 xl:px-16 py-8 sm:py-12 lg:py-16">
           {/* Hero Section - Enhanced responsive design */}
@@ -285,8 +323,8 @@ const ServicesPage: React.FC = () => {
             </h1>
             <p className="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl mx-auto px-4">
               We build intelligent systems that transform businesses. From AI
-              development to cloud infrastructure — we deliver scalable, secure, and
-              future-ready solutions.
+              development to cloud infrastructure — we deliver scalable, secure,
+              and future-ready solutions.
             </p>
           </header>
 
@@ -309,7 +347,9 @@ const ServicesPage: React.FC = () => {
                     visibleSections.has(`service-${index}`)
                       ? "opacity-100 translate-x-0"
                       : `opacity-0 ${
-                          index % 2 !== 0 ? "translate-x-8 lg:translate-x-12" : "-translate-x-8 lg:-translate-x-12"
+                          index % 2 !== 0
+                            ? "translate-x-8 lg:translate-x-12"
+                            : "-translate-x-8 lg:-translate-x-12"
                         }`
                   }`}
                 >
@@ -321,21 +361,34 @@ const ServicesPage: React.FC = () => {
                         alt={`${service.title} - Professional ${service.title.toLowerCase()} services`}
                         className={`w-full transition-all duration-700 group-hover:scale-105 ${
                           // Smaller heights for mobile to show text properly, larger for desktop
-                          service.id === 'ai' || service.id === 'automation' || service.id === 'data' || service.id === 'uiux'
-                            ? 'h-48 sm:h-64 md:h-80 lg:h-[420px] xl:h-[480px] object-cover'
-                            : 'h-56 sm:h-72 md:h-88 lg:h-[450px] xl:h-[500px] object-cover'
+                          service.id === "ai" ||
+                          service.id === "automation" ||
+                          service.id === "data" ||
+                          service.id === "uiux"
+                            ? "h-48 sm:h-64 md:h-80 lg:h-[420px] xl:h-[480px] object-cover"
+                            : "h-56 sm:h-72 md:h-88 lg:h-[450px] xl:h-[500px] object-cover"
                         }`}
                         loading={index < 2 ? "eager" : "lazy"}
                         decoding="async"
                         style={{
-                          objectPosition: service.id === 'ai' ? 'center 20%' :
-                                        service.id === 'web' ? 'center center' :
-                                        service.id === 'chatbot' ? 'center center' :
-                                        service.id === 'automation' ? 'center 70%' :
-                                        service.id === 'data' ? 'center 30%' :
-                                        service.id === 'marketing' ? 'center center' :
-                                        service.id === 'devops' ? 'center center' :
-                                        service.id === 'uiux' ? 'center 25%' : 'center center'
+                          objectPosition:
+                            service.id === "ai"
+                              ? "center 20%"
+                              : service.id === "web"
+                              ? "center center"
+                              : service.id === "chatbot"
+                              ? "center center"
+                              : service.id === "automation"
+                              ? "center 70%"
+                              : service.id === "data"
+                              ? "center 30%"
+                              : service.id === "marketing"
+                              ? "center center"
+                              : service.id === "devops"
+                              ? "center center"
+                              : service.id === "uiux"
+                              ? "center 25%"
+                              : "center center",
                         }}
                       />
                     </picture>
@@ -357,7 +410,7 @@ const ServicesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h2 
+                  <h2
                     id={`${service.id}-heading`}
                     className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-white leading-tight tracking-tight"
                   >
@@ -382,23 +435,23 @@ const ServicesPage: React.FC = () => {
                   </ul>
 
                   <button
-                    onClick={() => {
-                      // In production, this would navigate to the service detail page
-                      if (window.gtag) {
-                        window.gtag('event', 'service_interest', {
-                          service_name: service.title,
-                          service_id: service.id
-                        });
-                      }
-                      alert(`Navigating to ${service.title} details page...`);
-                    }}
+                    type="button"
+                    onClick={() => handleServiceNavigation(service)}
                     className="group bg-gradient-to-r from-white to-gray-100 text-black px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
                     aria-label={`Learn more about ${service.title}`}
                   >
                     Learn More
                     <div className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300">
-                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                      <svg
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                   </button>
@@ -414,12 +467,15 @@ const ServicesPage: React.FC = () => {
             role="region"
             aria-labelledby="contact-heading"
           >
-            <h2 id="contact-heading" className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
+            <h2
+              id="contact-heading"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight"
+            >
               Ready to Transform Your Business?
             </h2>
             <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 leading-relaxed max-w-4xl mx-auto">
-              Let&apos;s discuss how our technology solutions can accelerate your growth
-              and streamline your operations.
+              Let&apos;s discuss how our technology solutions can accelerate your
+              growth and streamline your operations.
             </p>
             <p className="text-sm text-gray-400 mb-6 sm:mb-8 flex items-center justify-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -428,7 +484,9 @@ const ServicesPage: React.FC = () => {
 
             <div className="grid grid-cols-1 gap-4 sm:gap-6 text-left max-w-2xl mx-auto">
               <div>
-                <label htmlFor="name" className="sr-only">Your Name</label>
+                <label htmlFor="name" className="sr-only">
+                  Your Name
+                </label>
                 <input
                   id="name"
                   type="text"
@@ -441,9 +499,11 @@ const ServicesPage: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="email" className="sr-only">Your Email</label>
+                <label htmlFor="email" className="sr-only">
+                  Your Email
+                </label>
                 <input
                   id="email"
                   type="email"
@@ -456,9 +516,11 @@ const ServicesPage: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="message" className="sr-only">Project Details</label>
+                <label htmlFor="message" className="sr-only">
+                  Project Details
+                </label>
                 <textarea
                   id="message"
                   name="message"
@@ -482,8 +544,9 @@ const ServicesPage: React.FC = () => {
               </div>
 
               <button
+                type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !captcha} // DISABLE UNTIL CAPTCHA IS SOLVED
+                disabled={isSubmitting || !captcha}
                 className="bg-white text-black px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
