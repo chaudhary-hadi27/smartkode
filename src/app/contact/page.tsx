@@ -1,34 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { MessageCircle, Mail, MapPin, Zap, Send } from "lucide-react";
+import { useState, useCallback, JSX } from "react";
+import { MessageCircle, Mail, Zap, Send } from "lucide-react";
+import ReCAPTCHA from "react-google-recaptcha";
 
-export default function ContactPage() {
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+interface FormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+interface ContactResponse {
+  success: boolean;
+  message?: string;
+}
+
+export default function ContactPage(): JSX.Element {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
   const [captcha, setCaptcha] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     message: "",
   });
 
-  const handleChange = (
+  const handleChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  ): void => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    // Clear error when user starts typing
+    if (error) {
+      setError("");
+    }
+  }, [error]);
+
+  const handleCaptchaChange = useCallback((token: string | null): void => {
+    setCaptcha(token);
+    if (error && token) {
+      setError("");
+    }
+  }, [error]);
+
+  const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      setError("Name is required");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (!formData.message.trim()) {
+      setError("Message is required");
+      return false;
+    }
+    if (!captcha) {
+      setError("Please complete the reCAPTCHA verification");
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmit = async (e: React.MouseEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ): Promise<void> => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
     setSuccess(false);
+    setError("");
 
     const data = {
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      message: formData.message.trim(),
       token: captcha,
     };
 
@@ -36,24 +92,39 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
       });
 
-      setLoading(false);
+      const result: ContactResponse = await res.json();
 
-      if (res.ok) {
+      if (res.ok && result.success) {
         setFormData({ name: "", email: "", message: "" });
         setCaptcha(null);
         setSuccess(true);
-        setTimeout(() => setSuccess(false), 5000);
+        // Reset reCAPTCHA
+        if (window.grecaptcha) {
+          window.grecaptcha.reset();
+        }
+        setTimeout(() => {
+          setSuccess(false);
+        }, 5000);
       } else {
-        alert("Failed to send message. Please try again.");
+        setError(result.message || "Failed to send message. Please try again.");
       }
-    } catch {
+    } catch (err) {
+      console.error("Contact form error:", err);
+      setError("Network error. Please try again later.");
+    } finally {
       setLoading(false);
-      alert("Network error. Please try again later.");
     }
   };
+
+  const isFormValid = formData.name.trim() && 
+                     formData.email.trim() && 
+                     formData.message.trim() && 
+                     captcha;
 
   return (
     <div className="bg-black text-white min-h-screen">
@@ -109,22 +180,12 @@ export default function ContactPage() {
 
               <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">Location</h3>
-                  <p className="text-gray-300">Islamabad, Pakistan</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
-                <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold mb-1">WhatsApp</h3>
                   <a
-                    href="https://wa.me/+9203004479894"
+                    href="https://wa.me/+923004479894"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors duration-200"
@@ -156,18 +217,18 @@ export default function ContactPage() {
             <div className="mb-8">
               <h2 className="text-2xl sm:text-3xl font-bold mb-4">Send Us a Message</h2>
               <p className="text-gray-400 mb-6">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2"></span>
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2" />
                 We typically respond within 24 hours
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 text-left">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 text-left">
               <div>
-                <label htmlFor="name" className="sr-only">
+                <label htmlFor="contact-name" className="sr-only">
                   Your Name
                 </label>
                 <input
-                  id="name"
+                  id="contact-name"
                   type="text"
                   name="name"
                   placeholder="Your Name"
@@ -181,11 +242,11 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="sr-only">
+                <label htmlFor="contact-email" className="sr-only">
                   Your Email
                 </label>
                 <input
-                  id="email"
+                  id="contact-email"
                   type="email"
                   name="email"
                   placeholder="Your Email"
@@ -199,11 +260,11 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="sr-only">
+                <label htmlFor="contact-message" className="sr-only">
                   Your Message
                 </label>
                 <textarea
-                  id="message"
+                  id="contact-message"
                   name="message"
                   placeholder="Tell us about your project..."
                   rows={5}
@@ -212,24 +273,38 @@ export default function ContactPage() {
                   required
                   className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all resize-vertical text-sm sm:text-base"
                   disabled={loading}
-                ></textarea>
+                />
               </div>
 
-              {/* reCAPTCHA would go here in production */}
+              {/* reCAPTCHA */}
               <div className="pt-2 flex justify-center">
-                <div className="text-gray-500 text-sm text-center">
-                  reCAPTCHA verification would be enabled in production
-                </div>
+                <ReCAPTCHA
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                  theme="dark"
+                  onChange={handleCaptchaChange}
+                  onExpired={() => setCaptcha(null)}
+                  onError={() => {
+                    setCaptcha(null);
+                    setError("reCAPTCHA error. Please try again.");
+                  }}
+                />
               </div>
+
+              {/* Error Display */}
+              {error && (
+                <div className="text-center p-4 bg-red-900/20 border border-red-700/50 rounded-xl">
+                  <p className="text-red-400 font-medium">{error}</p>
+                </div>
+              )}
 
               <button
-                onClick={handleSubmit}
-                disabled={loading}
+                type="submit"
+                disabled={loading || !isFormValid}
                 className="bg-white text-black px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                     Sending...
                   </>
                 ) : (
@@ -247,7 +322,7 @@ export default function ContactPage() {
                   </p>
                 </div>
               )}
-            </div>
+            </form>
 
             {/* Quick Contact Options */}
             <div className="mt-10 pt-8 border-t border-zinc-700/50">
@@ -258,15 +333,17 @@ export default function ContactPage() {
                 <a
                   href="mailto:info@smartkode.io"
                   className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
+                  aria-label="Send us an email"
                 >
                   <Mail className="w-4 h-4" />
                   Email Us
                 </a>
                 <a
-                  href="https://wa.me/+9203004479894"
+                  href="https://wa.me/+923004479894"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
+                  aria-label="Chat with us on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Chat on WhatsApp
@@ -276,26 +353,38 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Additional CTA Section */}
-        <section className="max-w-6xl mx-auto mt-20 sm:mt-24 lg:mt-32 text-center">
+        {/* Additional CTA Section - Inspired by your services */}
+        <section 
+          className="max-w-6xl mx-auto mt-20 sm:mt-24 lg:mt-32 text-center"
+          role="region"
+          aria-labelledby="cta-heading"
+        >
           <div className="bg-gradient-to-br from-zinc-900/80 to-black/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 shadow-2xl border border-zinc-800">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight">
+            <h2 
+              id="cta-heading"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight"
+            >
               Ready to Start Your Project?
             </h2>
             <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 leading-relaxed max-w-3xl mx-auto">
               Join hundreds of satisfied clients who have transformed their businesses
-              with our technology solutions.
+              with our AI and technology solutions. Let&apos;s accelerate your growth together.
+            </p>
+            
+            <p className="text-sm text-gray-400 mb-6 sm:mb-8 flex items-center justify-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              Trusted by businesses worldwide
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
-                href="https://wa.me/+9203004479894"
+                href="https://wa.me/+923004479894"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group bg-gradient-to-r from-white to-gray-100 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl"
               >
                 <Zap className="w-5 h-5 mr-2" />
-                Quick Chat
+                Kickstart My Project
                 <div className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300">
                   <svg
                     viewBox="0 0 20 20"
@@ -310,10 +399,29 @@ export default function ContactPage() {
                   </svg>
                 </div>
               </a>
+              
+              <a
+                href="mailto:info@smartkode.io"
+                className="group bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300 inline-flex items-center"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Email Discussion
+              </a>
             </div>
           </div>
         </section>
       </div>
     </div>
   );
+}
+
+// Type declaration for grecaptcha global
+declare global {
+  interface Window {
+    grecaptcha: {
+      reset: () => void;
+      render: (container: string | HTMLElement, parameters: object) => number;
+      getResponse: (widgetId?: number) => string;
+    };
+  }
 }
