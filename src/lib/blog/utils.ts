@@ -1,4 +1,4 @@
-// lib/blog/utils.ts
+// src/lib/blog/utils.ts - Fixed ESLint errors
 import type { Blog, BlogFilters, Tag } from '@/types/blog';
 
 export function formatDate(date: Date | string): string {
@@ -54,7 +54,7 @@ export function parseQueryString(queryString: string): BlogFilters {
     } else if (key === 'featured') {
       filters[key] = value === 'true';
     } else {
-      // @ts-ignore
+      // @ts-expect-error - Dynamic key assignment from query params
       filters[key] = value;
     }
   });
@@ -95,7 +95,6 @@ export function generateTableOfContents(content: Blog['content']) {
       .slice(index + 1)
       .filter(h => h.level > heading.level)
       .filter((_, i, arr) => {
-        // Only direct children
         return i === 0 || arr[i - 1].level >= heading.level;
       }),
   }));
@@ -247,14 +246,11 @@ export function findRelatedPosts(
     .map(blog => {
       let score = 0;
 
-      // Same category
       if (blog.category === currentBlog.category) score += 3;
 
-      // Shared tags
       const sharedTags = blog.tags.filter(tag => currentBlog.tags.includes(tag));
       score += sharedTags.length * 2;
 
-      // Same series
       if (blog.series?.name === currentBlog.series?.name) score += 5;
 
       return { blog, score };
@@ -301,14 +297,12 @@ export function calculateSEOScore(blog: Partial<Blog>): number {
   let score = 0;
   const maxScore = 100;
 
-  // Title (10 points)
   if (blog.title && blog.title.length >= 30 && blog.title.length <= 60) {
     score += 10;
   } else if (blog.title) {
     score += 5;
   }
 
-  // Meta description (10 points)
   if (blog.seo?.metaDescription && 
       blog.seo.metaDescription.length >= 120 && 
       blog.seo.metaDescription.length <= 160) {
@@ -317,26 +311,22 @@ export function calculateSEOScore(blog: Partial<Blog>): number {
     score += 5;
   }
 
-  // Featured image (10 points)
   if (blog.featuredImage?.url && blog.featuredImage?.altText) {
     score += 10;
   } else if (blog.featuredImage?.url) {
     score += 5;
   }
 
-  // Keywords (10 points)
   if (blog.seo?.keywords && blog.seo.keywords.length >= 3) {
     score += 10;
   } else if (blog.seo?.keywords && blog.seo.keywords.length > 0) {
     score += 5;
   }
 
-  // Focus keyword (10 points)
   if (blog.seo?.focusKeyword) {
     score += 10;
   }
 
-  // Word count (15 points)
   if (blog.wordCount && blog.wordCount >= 1000) {
     score += 15;
   } else if (blog.wordCount && blog.wordCount >= 600) {
@@ -345,7 +335,6 @@ export function calculateSEOScore(blog: Partial<Blog>): number {
     score += 5;
   }
 
-  // Headings (10 points)
   const headings = blog.content?.filter(b => b.type === 'heading' || b.type === 'subheading') || [];
   if (headings.length >= 3) {
     score += 10;
@@ -353,7 +342,6 @@ export function calculateSEOScore(blog: Partial<Blog>): number {
     score += 5;
   }
 
-  // Images (10 points)
   const images = blog.content?.filter(b => b.type === 'image' || b.imageContent) || [];
   if (images.length >= 2) {
     score += 10;
@@ -361,12 +349,10 @@ export function calculateSEOScore(blog: Partial<Blog>): number {
     score += 5;
   }
 
-  // Category (5 points)
   if (blog.category) {
     score += 5;
   }
 
-  // Tags (10 points)
   if (blog.tags && blog.tags.length >= 3) {
     score += 10;
   } else if (blog.tags && blog.tags.length > 0) {

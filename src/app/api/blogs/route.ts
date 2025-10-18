@@ -1,15 +1,15 @@
-// app/api/blogs/route.ts
+// src/app/api/blogs/route.ts - Enhanced with SEO
 import { NextRequest, NextResponse } from 'next/server';
 import { MongoClient, ObjectId } from 'mongodb';
-import type { Blog, BlogFilters, PaginatedBlogs } from '@/types/blog';
+import type { Blog, BlogContent, SEOMetadata } from '@/types/blog';
 import { 
   generateSlug, 
   calculateReadingTime, 
   calculateWordCount,
   generateExcerpt,
-  analyzeSEO 
+  analyzeSEO,
+  generateBlogSchema
 } from '@/lib/blog/seo';
-import { filterBlogs, sortBlogs, paginateBlogs } from '@/lib/blog/utils';
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -29,62 +29,52 @@ if (process.env.NODE_ENV === 'development') {
   clientPromise = client.connect();
 }
 
-// GET - Fetch blogs with advanced filtering
+// GET - Fetch blogs with SEO data
 export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db('blog_app');
     const { searchParams } = new URL(request.url);
     
-    // Parse filters
-    const filters: BlogFilters = {
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '10'),
-      category: searchParams.get('category') || undefined,
-      tag: searchParams.get('tag') || undefined,
-      author: searchParams.get('author') || undefined,
-      status: searchParams.get('status') as any || undefined,
-      search: searchParams.get('search') || undefined,
-      sortBy: searchParams.get('sortBy') as any || 'date',
-      sortOrder: searchParams.get('sortOrder') as any || 'desc',
-      featured: searchParams.get('featured') === 'true' ? true : undefined,
-    };
-
-    // Build MongoDB query
-    const query: any = {};
+    const published = searchParams.get('published');
+    const featured = searchParams.get('featured');
+    const category = searchParams.get('category');
+    const tag = searchParams.get('tag');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get('page') || '1');
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
+    const search = searchParams.get('search');
     
-    if (filters.category) query.category = filters.category;
-    if (filters.tag) query.tags = { $in: [filters.tag] };
-    if (filters.author) query.author = filters.author;
-    if (filters.status) query.status = filters.status;
-    if (filters.featured !== undefined) query.featured = filters.featured;
+    // Build filter
+    const filter: any = {};
+    if (published === 'true') filter.status = 'published';
+    if (featured === 'true') filter.featured = true;
+    if (category) filter.category = category;
+    if (tag) filter.tags = { $in: [tag] };
     
-    if (filters.search) {
-      query.$or = [
-        { title: { $regex: filters.search, $options: 'i' } },
-        { excerpt: { $regex: filters.search, $options: 'i' } },
-        { 'seo.keywords': { $in: [new RegExp(filters.search, 'i')] } },
+    // Search functionality
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { excerpt: { $regex: search, $options: 'i' } },
+        { 'seo.keywords': { $in: [new RegExp(search, 'i')] } }
       ];
     }
-
-    // Sorting
-    const sortField = filters.sortBy === 'views' ? 'analytics.views' : 
-                      filters.sortBy === 'date' ? 'publishedDate' :
-                      filters.sortBy === 'title' ? 'title' : 'readTime';
-    const sortDirection = filters.sortOrder === 'asc' ? 1 : -1;
-
-    const skip = ((filters.page || 1) - 1) * (filters.limit || 10);
-
-    // Fetch blogs
+    
+    const skip = (page - 1) * limit;
+    const sort: any = {};
+    sort[sortBy] = sortOrder;
+    
     const blogs = await db
       .collection<Blog>('blogs')
-      .find(query)
-      .sort({ [sortField]: sortDirection })
+      .find(filter)
+      .sort(sort)
       .skip(skip)
-      .limit(filters.limit || 10)
+      .limit(limit)
       .toArray();
 
-    const total = await db.collection<Blog>('blogs').countDocuments(query);
+    const total = await db.collection<Blog>('blogs').countDocuments(filter);
 
     // Get popular tags
     const popularTags = await db.collection<Blog>('blogs')
@@ -93,33 +83,21 @@ export async function GET(request: NextRequest) {
         { $unwind: '$tags' },
         { $group: { _id: '$tags', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
-        { $limit: 20 },
+        { $limit: 20 }
       ])
       .toArray();
 
-    // Get categories
-    const categories = await db.collection('categories')
-      .find({ featured: true })
-      .limit(10)
-      .toArray();
-
-    const result: PaginatedBlogs = {
+    return NextResponse.json({
       blogs,
       pagination: {
-        page: filters.page || 1,
-        limit: filters.limit || 10,
+        page,
+        limit,
         total,
-        pages: Math.ceil(total / (filters.limit || 10)),
+        pages: Math.ceil(total / limit),
         hasNext: skip + blogs.length < total,
-        hasPrev: (filters.page || 1) > 1,
+        hasPrev: page > 1
       },
-      filters,
-    };
-
-    return NextResponse.json({
-      ...result,
-      popularTags,
-      categories,
+      popularTags: popularTags.map(tag => ({ name: tag._id, count: tag.count }))
     });
   } catch (error) {
     console.error('Error fetching blogs:', error);
@@ -137,11 +115,11 @@ export async function POST(request: NextRequest) {
     const db = client.db('blog_app');
     
     const body = await request.json();
-    const { title, content, category, tags, author, seo, featuredImage, status, scheduledDate } = body;
+    const { title, description, content, author, tags, published, seo } = body;
 
-    if (!title || !content || !Array.isArray(content)) {
+    if (!title || !description || !content || !Array.isArray(content)) {
       return NextResponse.json(
-        { error: 'Title and content array are required' },
+        { error: 'Title, description, and content array are required' },
         { status: 400 }
       );
     }
@@ -158,13 +136,32 @@ export async function POST(request: NextRequest) {
     // Calculate metrics
     const readTime = calculateReadingTime(content);
     const wordCount = calculateWordCount(content);
-    const excerpt = generateExcerpt(content, 160);
+    const excerpt = seo?.metaDescription || generateExcerpt(content, 160);
+
+    // Prepare SEO metadata
+    const seoMetadata: SEOMetadata = {
+      metaTitle: seo?.metaTitle || title.substring(0, 60),
+      metaDescription: seo?.metaDescription || excerpt,
+      focusKeyword: seo?.focusKeyword || '',
+      keywords: seo?.keywords || [],
+      canonicalUrl: seo?.canonicalUrl || `https://smartkode.io/blogs/${slug}`,
+      noindex: seo?.noindex || false,
+      nofollow: seo?.nofollow || false,
+      ogImage: seo?.ogImage || '',
+      ogTitle: seo?.ogTitle || title,
+      ogDescription: seo?.ogDescription || excerpt,
+      ogType: 'article',
+      twitterCard: 'summary_large_image',
+      twitterTitle: seo?.twitterTitle || title,
+      twitterDescription: seo?.twitterDescription || excerpt,
+      schemaType: 'BlogPosting'
+    };
 
     // SEO analysis
     const seoScore = analyzeSEO({ 
       title, 
       content, 
-      seo: seo || { keywords: [], focusKeyword: '' } 
+      seo: seoMetadata 
     });
 
     const blog: Omit<Blog, '_id'> = {
@@ -175,30 +172,18 @@ export async function POST(request: NextRequest) {
         ...item,
         order: index,
         content: item.content?.trim() || '',
+        imageAlt: item.imageAlt || '',
+        imageTitle: item.imageTitle || ''
       })),
       
-      seo: {
-        metaTitle: seo?.metaTitle || title,
-        metaDescription: seo?.metaDescription || excerpt,
-        focusKeyword: seo?.focusKeyword || '',
-        keywords: seo?.keywords || [],
-        canonicalUrl: seo?.canonicalUrl,
-        noindex: seo?.noindex || false,
-        nofollow: seo?.nofollow || false,
-        ogImage: seo?.ogImage || featuredImage?.url,
-        ogTitle: seo?.ogTitle || title,
-        ogDescription: seo?.ogDescription || excerpt,
-      },
+      seo: seoMetadata,
 
-      category: category || 'Uncategorized',
+      category: 'Uncategorized',
       tags: Array.isArray(tags) ? tags : [],
       author: author || 'Anonymous',
       
-      featuredImage: featuredImage || undefined,
-      
-      status: status || 'draft',
-      publishedDate: status === 'published' ? new Date() : undefined,
-      scheduledDate: scheduledDate ? new Date(scheduledDate) : undefined,
+      status: published ? 'published' : 'draft',
+      publishedDate: published ? new Date() : undefined,
       
       analytics: {
         views: 0,
@@ -209,7 +194,8 @@ export async function POST(request: NextRequest) {
           twitter: 0,
           linkedin: 0,
           facebook: 0,
-        },
+          whatsapp: 0
+        }
       },
       
       createdAt: new Date(),
@@ -221,6 +207,8 @@ export async function POST(request: NextRequest) {
       featured: false,
       sticky: false,
       allowComments: true,
+      
+      seoScore: seoScore.percentage
     };
 
     const result = await db.collection<Blog>('blogs').insertOne(blog);
@@ -231,7 +219,8 @@ export async function POST(request: NextRequest) {
       slug,
       readTime,
       wordCount,
-      seoScore,
+      seoScore: seoScore.percentage,
+      seoGrade: seoScore.grade
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating blog:', error);
@@ -249,24 +238,17 @@ export async function PUT(request: NextRequest) {
     const db = client.db('blog_app');
     
     const body = await request.json();
-    const { id, title, content, category, tags, seo, featuredImage, status } = body;
+    const { id, title, description, content, author, tags, published, seo } = body;
 
-    if (!id) {
+    if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Blog ID is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid blog ID' },
+        { error: 'Valid blog ID is required' },
         { status: 400 }
       );
     }
 
     const updateData: Partial<Blog> = {
-      updatedAt: new Date(),
+      updatedAt: new Date()
     };
 
     if (title) {
@@ -288,25 +270,43 @@ export async function PUT(request: NextRequest) {
       updateData.slug = slug;
     }
 
+    if (description) updateData.excerpt = description.trim();
+    
     if (content && Array.isArray(content)) {
       updateData.content = content.map((item: any, index: number) => ({
         ...item,
         order: index,
+        content: item.content?.trim() || '',
+        imageAlt: item.imageAlt || '',
+        imageTitle: item.imageTitle || ''
       }));
       
       updateData.readTime = calculateReadingTime(content);
       updateData.wordCount = calculateWordCount(content);
-      updateData.excerpt = generateExcerpt(content);
     }
-
-    if (category) updateData.category = category;
-    if (tags) updateData.tags = tags;
-    if (seo) updateData.seo = seo as any;
-    if (featuredImage) updateData.featuredImage = featuredImage;
     
-    if (status) {
-      updateData.status = status;
-      if (status === 'published' && !updateData.publishedDate) {
+    if (seo) {
+      updateData.seo = {
+        ...seo,
+        metaTitle: seo.metaTitle || title,
+        metaDescription: seo.metaDescription || description,
+        canonicalUrl: seo.canonicalUrl || `https://smartkode.io/blogs/${updateData.slug || ''}`
+      } as SEOMetadata;
+      
+      // Recalculate SEO score
+      const seoScore = analyzeSEO({ 
+        title: updateData.title || title, 
+        content: updateData.content || content, 
+        seo: updateData.seo 
+      });
+      updateData.seoScore = seoScore.percentage;
+    }
+    
+    if (author !== undefined) updateData.author = author?.trim() || 'Anonymous';
+    if (tags !== undefined) updateData.tags = Array.isArray(tags) ? tags : [];
+    if (typeof published === 'boolean') {
+      updateData.status = published ? 'published' : 'draft';
+      if (published && !updateData.publishedDate) {
         updateData.publishedDate = new Date();
       }
     }
@@ -327,6 +327,7 @@ export async function PUT(request: NextRequest) {
       message: 'Blog updated successfully',
       readTime: updateData.readTime,
       wordCount: updateData.wordCount,
+      seoScore: updateData.seoScore
     });
   } catch (error) {
     console.error('Error updating blog:', error);

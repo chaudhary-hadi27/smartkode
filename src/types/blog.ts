@@ -1,4 +1,4 @@
-// types/blog.ts
+// src/types/blog.ts - Enhanced with SEO fields
 import { ObjectId } from 'mongodb';
 
 export type BlogStatus = 'draft' | 'scheduled' | 'published' | 'archived';
@@ -13,8 +13,10 @@ export type BlockType =
   | 'embed'
   | 'separator'
   | 'cta'
-  | 'toc'
-  | 'faq';
+  | 'list'
+  | 'table'
+  | 'video'
+  | 'gallery';
 
 export interface BlogContent {
   type: BlockType;
@@ -27,13 +29,15 @@ export interface BlogContent {
   textStyle?: 'normal' | 'bold' | 'italic';
   alignment?: 'left' | 'center' | 'right';
   
-  // Image properties
+  // Image properties (SEO CRITICAL)
   imageSize?: 'small' | 'medium' | 'large' | 'full';
-  imageAlt?: string;
+  imageAlt?: string; // SEO: Alt text for images
   imageCaption?: string;
+  imageTitle?: string; // SEO: Image title attribute
   
   // Heading properties
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+  headingId?: string; // For anchor links
   
   // Code block properties
   language?: string;
@@ -44,26 +48,41 @@ export interface BlogContent {
   // CTA properties
   ctaText?: string;
   ctaLink?: string;
+  ctaStyle?: 'primary' | 'secondary' | 'outline';
   
-  // FAQ properties
-  question?: string;
-  answer?: string;
+  // List properties
+  listItems?: string[];
+  listType?: 'ordered' | 'unordered';
+  
+  // Video properties
+  videoUrl?: string;
+  videoProvider?: 'youtube' | 'vimeo' | 'custom';
 }
 
+// SEO Metadata (CRITICAL FOR SEO)
 export interface SEOMetadata {
-  metaTitle: string;
-  metaDescription: string;
+  metaTitle: string; // 50-60 chars
+  metaDescription: string; // 150-160 chars
   focusKeyword: string;
-  keywords: string[];
+  keywords: string[]; // 5-10 keywords
   canonicalUrl?: string;
   noindex: boolean;
   nofollow: boolean;
+  
+  // Open Graph (Social Media SEO)
   ogImage?: string;
   ogTitle?: string;
   ogDescription?: string;
+  ogType?: 'article' | 'website';
+  
+  // Twitter Card
+  twitterCard?: 'summary' | 'summary_large_image';
   twitterImage?: string;
   twitterTitle?: string;
   twitterDescription?: string;
+  
+  // Structured Data
+  schemaType?: 'Article' | 'BlogPosting' | 'NewsArticle';
 }
 
 export interface BlogAnalytics {
@@ -76,6 +95,13 @@ export interface BlogAnalytics {
     twitter: number;
     linkedin: number;
     facebook: number;
+    whatsapp: number;
+  };
+  topReferrers?: string[];
+  deviceStats?: {
+    mobile: number;
+    desktop: number;
+    tablet: number;
   };
 }
 
@@ -90,7 +116,9 @@ export interface Author {
     twitter?: string;
     linkedin?: string;
     github?: string;
+    website?: string;
   };
+  verified?: boolean;
 }
 
 export interface Category {
@@ -103,6 +131,7 @@ export interface Category {
   featured: boolean;
   color?: string;
   icon?: string;
+  blogCount?: number;
 }
 
 export interface Tag {
@@ -115,7 +144,7 @@ export interface Tag {
 export interface MediaAsset {
   _id?: ObjectId;
   url: string;
-  altText: string;
+  altText: string; // SEO: Required
   caption?: string;
   title: string;
   fileSize: number;
@@ -125,19 +154,11 @@ export interface MediaAsset {
   };
   mimeType: string;
   optimized: boolean;
+  webpUrl?: string; // SEO: WebP version for performance
+  thumbnailUrl?: string;
   tags: string[];
   uploadedBy: string;
   createdAt: Date;
-}
-
-export interface BlogRevision {
-  _id?: ObjectId;
-  blogId: string;
-  content: BlogContent[];
-  title: string;
-  modifiedBy: string;
-  createdAt: Date;
-  changeDescription?: string;
 }
 
 export interface Blog {
@@ -149,19 +170,20 @@ export interface Blog {
   excerpt: string;
   content: BlogContent[];
   
-  // SEO
+  // SEO (CRITICAL)
   seo: SEOMetadata;
   
   // Organization
-  category: string;
+  category: string | Category;
   tags: string[];
   author: string | Author;
   
-  // Media
+  // Media (SEO: Featured image important for social sharing)
   featuredImage?: {
     url: string;
-    altText: string;
+    altText: string; // SEO: Required
     caption?: string;
+    title?: string;
   };
   
   // Publishing
@@ -175,8 +197,8 @@ export interface Blog {
   // Metadata
   createdAt: Date;
   updatedAt: Date;
-  readTime: number;
-  wordCount: number;
+  readTime: number; // Calculated
+  wordCount: number; // Calculated
   
   // Relations
   relatedPosts: string[];
@@ -189,8 +211,13 @@ export interface Blog {
   featured: boolean;
   sticky: boolean;
   allowComments: boolean;
+  commentsCount?: number;
   customCSS?: string;
   customJS?: string;
+  
+  // SEO Score (calculated)
+  seoScore?: number;
+  readabilityScore?: number;
 }
 
 export interface BlogFilters {
@@ -219,20 +246,35 @@ export interface PaginatedBlogs {
     hasPrev: boolean;
   };
   filters: BlogFilters;
+  popularTags?: Tag[];
+  categories?: Category[];
 }
 
 export interface SEOScore {
   score: number;
   maxScore: number;
+  percentage: number;
+  grade: 'A' | 'B' | 'C' | 'D' | 'F';
   checks: {
-    metaTitle: { passed: boolean; message: string; score: number };
-    metaDescription: { passed: boolean; message: string; score: number };
-    focusKeyword: { passed: boolean; message: string; score: number };
-    readability: { passed: boolean; message: string; score: number };
-    imageAlt: { passed: boolean; message: string; score: number };
-    internalLinks: { passed: boolean; message: string; score: number };
-    headingStructure: { passed: boolean; message: string; score: number };
-    wordCount: { passed: boolean; message: string; score: number };
+    metaTitle: SEOCheck;
+    metaDescription: SEOCheck;
+    focusKeyword: SEOCheck;
+    readability: SEOCheck;
+    imageAlt: SEOCheck;
+    internalLinks: SEOCheck;
+    externalLinks: SEOCheck;
+    headingStructure: SEOCheck;
+    wordCount: SEOCheck;
+    urlStructure: SEOCheck;
   };
   suggestions: string[];
+  criticalIssues: string[];
+}
+
+export interface SEOCheck {
+  passed: boolean;
+  message: string;
+  score: number;
+  maxScore: number;
+  priority: 'high' | 'medium' | 'low';
 }
