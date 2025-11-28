@@ -3,14 +3,20 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ScrollState } from '../types';
 import { NAV_HEIGHT, SCROLL_OFFSET, SCROLL_TIMEOUT } from '../data/termsData';
 
-export function useTermsNavigation(navItems: Array<{ id: string }>) {
+interface UseTermsNavigationReturn {
+  scrollState: ScrollState;
+  navContainerRef: React.RefObject<HTMLDivElement | null>;
+  scrollToSection: (sectionId: string) => void;
+  handleKeyDown: (event: React.KeyboardEvent, sectionId: string) => void;
+}
+
+export function useTermsNavigation(navItems: Array<{ id: string }>): UseTermsNavigationReturn {
   const [scrollState, setScrollState] = useState<ScrollState>({
     activeSection: 'acceptance',
     isScrolling: false
   });
 
- 
-  const navContainerRef = useRef<HTMLDivElement | null>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 

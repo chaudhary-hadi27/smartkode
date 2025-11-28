@@ -31,14 +31,14 @@ export default function TermsOfServiceContainer() {
         lastUpdated={COMPANY_INFO.lastUpdated}
       />
 
-      {/* ✅ Pass navContainerRef as a normal prop, not as ref */}
-      <TermsNavigation
-        navItems={NAV_ITEMS}
-        scrollState={scrollState}
-        navContainerRef={navContainerRef}
-        onSectionClick={scrollToSection}
-        onKeyDown={handleKeyDown}
-      />
+<TermsNavigation
+  navItems={NAV_ITEMS}
+  scrollState={scrollState}
+  navContainerRef={navContainerRef as React.RefObject<HTMLDivElement>}
+  onSectionClick={scrollToSection}
+  onKeyDown={handleKeyDown}
+/>
+
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <AcceptanceSection companyName={COMPANY_INFO.companyName} />

@@ -39,6 +39,7 @@ const PrivacyNavigation: React.FC<PrivacyNavigationProps> = ({
                     : 'text-gray-400 border-transparent hover:border-gray-600'
                 }`}
                 aria-current={activeSection === item.id ? 'page' : undefined}
+                type="button"
               >
                 {item.label}
               </button>

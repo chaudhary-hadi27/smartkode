@@ -6,8 +6,7 @@ import type { NavItem, ScrollState } from '../types';
 interface TermsNavigationProps {
   navItems: NavItem[];
   scrollState: ScrollState;
-  // <-- Accept the exact type returned by useRef()
-  navContainerRef: React.MutableRefObject<HTMLDivElement | null>;
+  navContainerRef: React.RefObject<HTMLDivElement>;
   onSectionClick: (sectionId: string) => void;
   onKeyDown: (event: React.KeyboardEvent, sectionId: string) => void;
 }
@@ -52,6 +51,7 @@ export default function TermsNavigation({
                   aria-current={isActive ? 'page' : undefined}
                   aria-label={`Navigate to ${item.label} section`}
                   title={item.description}
+                  type="button"
                 >
                   <div className="flex items-center space-x-2">
                     <Icon className={`w-4 h-4 transition-all duration-200 ${

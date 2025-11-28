@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, JSX } from 'react';
+import { useState, useEffect, useRef, JSX } from 'react';
 
 interface LogoDesign {
   type: string;
@@ -102,23 +102,24 @@ const WhyChooseSmartKode: React.FC = () => {
 
   const renderLogo = (logo: LogoDesign): JSX.Element => {
     const commonClasses = 'w-6 h-6 fill-current';
+    const ariaLabel = `${logo.design} icon`;
     
     switch(logo.design) {
       case 'truck':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M17 6H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1.8a3 3 0 0 0 5.4 0h3.6a3 3 0 0 0 5.4 0H21a1 1 0 0 0 1-1v-5a1 1 0 0 0-.3-.7l-3-3A1 1 0 0 0 18 6h-1zM7.5 19a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm9 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
           </svg>
         );
       case 'hexagon':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M17.5 3.5L22 12l-4.5 8.5h-11L2 12l4.5-8.5h11z"/>
           </svg>
         );
       case 'circuit':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <circle cx="6" cy="6" r="2"/>
             <circle cx="18" cy="6" r="2"/>
             <circle cx="6" cy="18" r="2"/>
@@ -128,14 +129,14 @@ const WhyChooseSmartKode: React.FC = () => {
         );
       case 'megaphone':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.19 0 2.34-.21 3.41-.6.3-.11.59-.46.59-.82v-1.04c0-.83-.67-1.5-1.5-1.5-.17 0-.33.03-.5.08-.83.25-1.71.38-2.6.38-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8v.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V12c0-5.52-4.48-10-10-10zm0 6c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
             <path d="M19 10v4l3-2-3-2z"/>
           </svg>
         );
       case 'squares':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <rect x="3" y="3" width="7" height="7"/>
             <rect x="14" y="3" width="7" height="7"/>
             <rect x="3" y="14" width="7" height="7"/>
@@ -144,43 +145,43 @@ const WhyChooseSmartKode: React.FC = () => {
         );
       case 'lightning':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
         );
       case 'cart':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M7 4V2a1 1 0 0 0-2 0v2H3a1 1 0 0 0 0 2h1.4l1.5 9.3A2 2 0 0 0 7.9 17H18a1 1 0 0 0 0-2H7.9l-.3-2H18a2 2 0 0 0 2-1.7l1-7A1 1 0 0 0 20 3H7zM19 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
           </svg>
         );
       case 'bag':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 15a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v12z"/>
           </svg>
         );
       case 'store':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M21.9 8.4l-1.6-6.7A1 1 0 0 0 19.4 1H4.6a1 1 0 0 0-.9.7L2.1 8.4a3 3 0 0 0 2.9 3.6v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a3 3 0 0 0 2.9-3.6zM6 20v-7h12v7H6z"/>
           </svg>
         );
       case 'tower':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M4 21V9l8-6 8 6v12H4zM9 21h6v-6H9v6z"/>
           </svg>
         );
       case 'brackets':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <path d="M16 4h2v16h-2M8 4H6v16h2M10 8h4M10 12h4M10 16h4"/>
           </svg>
         );
       case 'connect':
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label={ariaLabel}>
             <circle cx="12" cy="5" r="3"/>
             <circle cx="12" cy="19" r="3"/>
             <circle cx="5" cy="12" r="3"/>
@@ -190,7 +191,7 @@ const WhyChooseSmartKode: React.FC = () => {
         );
       default:
         return (
-          <svg viewBox="0 0 24 24" className={commonClasses}>
+          <svg viewBox="0 0 24 24" className={commonClasses} aria-label="Default company icon">
             <circle cx="12" cy="12" r="10"/>
           </svg>
         );
@@ -208,7 +209,7 @@ const WhyChooseSmartKode: React.FC = () => {
       aria-label="Why Choose SmartKode"
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-5" aria-hidden="true">
         <div 
           className="absolute inset-0" 
           style={{
@@ -257,9 +258,11 @@ const WhyChooseSmartKode: React.FC = () => {
               <div 
                 className="flex space-x-6 animate-scroll-right"
                 style={{ width: 'fit-content' }}
+                role="list"
+                aria-label="Partner companies scrolling right"
               >
                 {duplicatedCompanies.map((company, index) => (
-                  <div key={`row1-${index}`} className="flex-shrink-0 group">
+                  <div key={`row1-${company.name}-${index}`} className="flex-shrink-0 group" role="listitem">
                     <div className="w-48 sm:w-56 p-4 sm:p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 hover:scale-105">
                       <div className="flex items-center mb-4">
                         <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${company.logo.color} rounded-lg flex items-center justify-center mr-3 text-white shadow-lg`}>
@@ -281,9 +284,11 @@ const WhyChooseSmartKode: React.FC = () => {
               <div 
                 className="flex space-x-6 animate-scroll-left"
                 style={{ width: 'fit-content' }}
+                role="list"
+                aria-label="Partner companies scrolling left"
               >
                 {reversedCompanies.map((company, index) => (
-                  <div key={`row2-${index}`} className="flex-shrink-0 group">
+                  <div key={`row2-${company.name}-${index}`} className="flex-shrink-0 group" role="listitem">
                     <div className="w-48 sm:w-56 p-4 sm:p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300 hover:scale-105">
                       <div className="flex items-center mb-4">
                         <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${company.logo.color} rounded-lg flex items-center justify-center mr-3 text-white shadow-lg`}>
@@ -301,8 +306,8 @@ const WhyChooseSmartKode: React.FC = () => {
             </div>
 
             {/* Fade edges */}
-            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-black to-transparent pointer-events-none z-10" />
-            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-black to-transparent pointer-events-none z-10" />
+            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-black to-transparent pointer-events-none z-10" aria-hidden="true" />
+            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-black to-transparent pointer-events-none z-10" aria-hidden="true" />
           </div>
         </div>
       </div>
