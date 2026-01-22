@@ -3,33 +3,35 @@ import { type VariantProps, cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:pointer-events-none',
+    'inline-flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:pointer-events-none',
     {
         variants: {
             variant: {
-                primary:
-                    'bg-foreground text-background hover:bg-foreground/90 focus:ring-foreground',
-                secondary:
-                    'bg-background-tertiary text-foreground hover:bg-background-tertiary/80 border border-border focus:ring-border',
-                outline:
-                    'border-2 border-foreground text-foreground hover:bg-foreground hover:text-background focus:ring-foreground',
-                ghost:
-                    'text-foreground hover:bg-background-tertiary focus:ring-border',
-                success:
-                    'bg-success text-white hover:bg-success-dark focus:ring-success',
-                error:
-                    'bg-error text-white hover:bg-error-dark focus:ring-error',
-                warning:
-                    'bg-warning text-white hover:bg-warning-dark focus:ring-warning',
-                link:
-                    'text-foreground underline-offset-4 hover:underline focus:ring-foreground',
+                // Primary - White background (most used in your code)
+                primary: 'bg-white text-black hover:bg-gray-100 focus:ring-white',
+
+                // Gradient variants (exact from your code)
+                gradient: 'bg-gradient-to-r from-white to-gray-100 text-black hover:from-gray-100 hover:to-gray-200',
+                gradientBlue: 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700',
+
+                // Secondary - Dark backgrounds
+                secondary: 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-700',
+                ghost: 'bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 border border-gray-700',
+
+                // Outline
+                outline: 'border-2 border-white text-white hover:bg-white hover:text-black',
+
+                // Status colors
+                success: 'bg-green-500 text-white hover:bg-green-600',
+                error: 'bg-red-500 text-white hover:bg-red-600',
+                warning: 'bg-yellow-500 text-white hover:bg-yellow-600',
             },
             size: {
-                sm: 'h-9 px-4 text-sm',
-                md: 'h-11 px-6 text-base',
-                lg: 'h-14 px-8 text-lg',
-                xl: 'h-16 px-10 text-xl',
-                icon: 'h-10 w-10',
+                // Responsive sizes (matches your current code)
+                sm: 'h-9 px-4 py-2 text-sm rounded-lg',
+                md: 'px-6 sm:px-8 py-3 sm:py-4 text-base rounded-xl',
+                lg: 'px-8 sm:px-10 py-4 sm:py-5 text-lg rounded-xl',
+                icon: 'h-10 w-10 p-2 rounded-xl',
             },
             fullWidth: {
                 true: 'w-full',
@@ -37,7 +39,7 @@ const buttonVariants = cva(
             },
         },
         defaultVariants: {
-            variant: 'primary',
+            variant: 'gradient',
             size: 'md',
             fullWidth: false,
         },
@@ -47,7 +49,6 @@ const buttonVariants = cva(
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement>,
         VariantProps<typeof buttonVariants> {
-    asChild?: boolean
     loading?: boolean
     leftIcon?: React.ReactNode
     rightIcon?: React.ReactNode
@@ -71,37 +72,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ) => {
         return (
             <button
-                className={cn(buttonVariants({ variant, size, fullWidth, className }))}
+                className={cn(buttonVariants({ variant, size, fullWidth }), className)}
                 ref={ref}
                 disabled={disabled || loading}
                 {...props}
             >
                 {loading && (
-                    <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                    >
-                        <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                        />
-                        <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                    </svg>
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                 )}
 
                 {!loading && leftIcon && (
-                    <span className="mr-2" aria-hidden="true">
+                    <span className="mr-2 flex items-center" aria-hidden="true">
             {leftIcon}
           </span>
                 )}
@@ -109,7 +90,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 {children}
 
                 {!loading && rightIcon && (
-                    <span className="ml-2" aria-hidden="true">
+                    <span className="ml-2 flex items-center" aria-hidden="true">
             {rightIcon}
           </span>
                 )}

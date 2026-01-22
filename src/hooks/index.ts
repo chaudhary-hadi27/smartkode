@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
-// Media Query Hook
+// Media Query Hook - Used for responsive behavior
 export function useMediaQuery(query: string): boolean {
     const [matches, setMatches] = useState(false)
 
@@ -15,50 +15,19 @@ export function useMediaQuery(query: string): boolean {
     return matches
 }
 
-// Click Outside Hook
-export function useClickOutside<T extends HTMLElement>(
-    handler: () => void
-): React.RefObject<T | null> {
-    const ref = useRef<T | null>(null)
+// Debounce Hook - Performance optimization
+export function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState(value)
 
     useEffect(() => {
-        const listener = (event: MouseEvent | TouchEvent) => {
-            if (!ref.current || ref.current.contains(event.target as Node)) return
-            handler()
-        }
-        document.addEventListener('mousedown', listener)
-        document.addEventListener('touchstart', listener)
-        return () => {
-            document.removeEventListener('mousedown', listener)
-            document.removeEventListener('touchstart', listener)
-        }
-    }, [handler])
+        const timer = setTimeout(() => setDebouncedValue(value), delay)
+        return () => clearTimeout(timer)
+    }, [value, delay])
 
-    return ref
+    return debouncedValue
 }
 
-// Key Press Hook
-export function useKeyPress(targetKey: string, handler: () => void): void {
-    useEffect(() => {
-        const downHandler = (e: KeyboardEvent) => {
-            if (e.key === targetKey) handler()
-        }
-        window.addEventListener('keydown', downHandler)
-        return () => window.removeEventListener('keydown', downHandler)
-    }, [targetKey, handler])
-}
-
-// Scroll Lock Hook
-export function useScrollLock(lock: boolean): void {
-    useEffect(() => {
-        if (lock) {
-            document.body.style.overflow = 'hidden'
-            return () => { document.body.style.overflow = 'unset' }
-        }
-    }, [lock])
-}
-
-// Intersection Observer Hook
+// Intersection Observer Hook - Scroll animations
 export function useIntersection(
     ref: React.RefObject<HTMLElement>,
     options?: IntersectionObserverInit
@@ -77,19 +46,7 @@ export function useIntersection(
     return isIntersecting
 }
 
-// Debounce Hook
-export function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState(value)
-
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedValue(value), delay)
-        return () => clearTimeout(timer)
-    }, [value, delay])
-
-    return debouncedValue
-}
-
-// Local Storage Hook
+// Local Storage Hook - Persistent state
 export function useLocalStorage<T>(key: string, initialValue: T) {
     const [storedValue, setStoredValue] = useState<T>(() => {
         if (typeof window === 'undefined') return initialValue

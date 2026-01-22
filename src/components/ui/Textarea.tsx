@@ -1,8 +1,7 @@
 import React, { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
-export interface TextareaProps
-    extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     label?: string
     error?: string
     helperText?: string
@@ -36,13 +35,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         return (
             <div className={cn('flex flex-col gap-2', fullWidth && 'w-full')}>
                 {label && (
-                    <label
-                        htmlFor={textareaId}
-                        className="text-sm font-medium text-foreground"
-                    >
+                    <label htmlFor={textareaId} className="text-sm font-medium text-white">
                         {label}
                         {props.required && (
-                            <span className="ml-1 text-error" aria-label="required">
+                            <span className="ml-1 text-red-500" aria-label="required">
                 *
               </span>
                         )}
@@ -52,14 +48,15 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 <textarea
                     id={textareaId}
                     className={cn(
-                        'flex min-h-[120px] w-full rounded-lg border bg-background-secondary px-4 py-3 text-base text-foreground',
-                        'placeholder:text-foreground-muted',
-                        'transition-colors duration-200',
-                        'focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent',
+                        // Exact match from your contact/services pages
+                        'flex min-h-[120px] w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl',
+                        'bg-black/40 border text-white placeholder-gray-400',
+                        'focus:outline-none focus:ring-1 focus:ring-white focus:border-white',
                         'disabled:cursor-not-allowed disabled:opacity-50',
+                        'transition-all duration-300',
                         error
-                            ? 'border-error focus:ring-error'
-                            : 'border-border hover:border-border-secondary',
+                            ? 'border-red-700 focus:ring-red-500'
+                            : 'border-gray-700 hover:border-gray-600',
                         resizeClasses[resize],
                         className
                     )}
@@ -72,20 +69,13 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 />
 
                 {error && (
-                    <p
-                        id={`${textareaId}-error`}
-                        className="text-sm text-error"
-                        role="alert"
-                    >
+                    <p id={`${textareaId}-error`} className="text-sm text-red-400" role="alert">
                         {error}
                     </p>
                 )}
 
                 {!error && helperText && (
-                    <p
-                        id={`${textareaId}-helper`}
-                        className="text-sm text-foreground-muted"
-                    >
+                    <p id={`${textareaId}-helper`} className="text-sm text-gray-400">
                         {helperText}
                     </p>
                 )}

@@ -14,14 +14,19 @@ const sectionVariants = cva('w-full', {
         },
         background: {
             transparent: 'bg-transparent',
-            primary: 'bg-background',
-            secondary: 'bg-background-secondary',
-            tertiary: 'bg-background-tertiary',
+            black: 'bg-black',
+            dark: 'bg-gray-900/50',
+            darker: 'bg-gray-900',
+        },
+        overflow: {
+            visible: 'overflow-visible',
+            hidden: 'overflow-hidden',
         },
     },
     defaultVariants: {
         spacing: 'md',
-        background: 'transparent',
+        background: 'black',
+        overflow: 'hidden',
     },
 })
 
@@ -39,6 +44,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
             className,
             spacing,
             background,
+            overflow,
             containerSize = 'lg',
             containerPadding = 'md',
             withContainer = true,
@@ -58,7 +64,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
         return (
             <section
                 ref={ref}
-                className={cn(sectionVariants({ spacing, background }), className)}
+                className={cn(sectionVariants({ spacing, background, overflow }), className)}
                 {...props}
             >
                 {content}
@@ -84,11 +90,7 @@ const SectionHeader = forwardRef<
     return (
         <div
             ref={ref}
-            className={cn(
-                'mb-12 lg:mb-16',
-                alignmentClasses[align],
-                className
-            )}
+            className={cn('mb-12 sm:mb-16 lg:mb-20', alignmentClasses[align], className)}
             {...props}
         />
     )
@@ -96,23 +98,15 @@ const SectionHeader = forwardRef<
 
 SectionHeader.displayName = 'SectionHeader'
 
-const SectionBadge = forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-    <div
-        ref={ref}
-        className={cn(
-            'inline-block mb-4 sm:mb-6',
-            className
-        )}
-        {...props}
-    >
-    <span className="bg-background-tertiary text-foreground px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase border border-border">
-      {props.children}
-    </span>
-    </div>
-))
+const SectionBadge = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className, children, ...props }, ref) => (
+        <div ref={ref} className={cn('inline-block mb-4 sm:mb-6', className)} {...props}>
+      <span className="bg-gray-800 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase border border-gray-700">
+        {children}
+      </span>
+        </div>
+    )
+)
 
 SectionBadge.displayName = 'SectionBadge'
 
@@ -120,16 +114,20 @@ const SectionTitle = forwardRef<
     HTMLHeadingElement,
     React.HTMLAttributes<HTMLHeadingElement> & {
     as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    gradient?: boolean
 }
->(({ className, as: Component = 'h2', ...props }, ref) => (
+>(({ className, as: Component = 'h2', gradient = false, children, ...props }, ref) => (
     <Component
         ref={ref}
         className={cn(
             'text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6 tracking-tight leading-tight',
+            gradient && 'bg-gradient-to-r from-white via-gray-300 to-white bg-clip-text text-transparent',
             className
         )}
         {...props}
-    />
+    >
+        {children}
+    </Component>
 ))
 
 SectionTitle.displayName = 'SectionTitle'
@@ -141,7 +139,7 @@ const SectionDescription = forwardRef<
     <p
         ref={ref}
         className={cn(
-            'text-base sm:text-lg text-foreground-tertiary max-w-4xl mx-auto leading-relaxed',
+            'text-base sm:text-lg md:text-xl text-gray-400 max-w-4xl mx-auto leading-relaxed',
             className
         )}
         {...props}

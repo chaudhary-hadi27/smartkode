@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-// Grid Component
+// Grid Component - Exact match from your code patterns
 const grid = cva('grid', {
     variants: {
         cols: {
@@ -18,9 +18,10 @@ const grid = cva('grid', {
             md: 'gap-4 sm:gap-6',
             lg: 'gap-6 sm:gap-8',
             xl: 'gap-8 sm:gap-12',
+            '2xl': 'gap-12 sm:gap-16',
         },
     },
-    defaultVariants: { cols: 3, gap: 'md' },
+    defaultVariants: { cols: 2, gap: 'lg' },
 })
 
 interface GridProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof grid> {}
@@ -28,18 +29,18 @@ interface GridProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<t
 export const Grid = forwardRef<HTMLDivElement, GridProps>(
     ({ className, cols, gap, ...props }, ref) => (
         <div ref={ref} className={cn(grid({ cols, gap }), className)} {...props} />
-)
+    )
 )
 Grid.displayName = 'Grid'
 
-// Flex Component
+// Flex Component - Exact match
 const flex = cva('flex', {
     variants: {
         direction: {
             row: 'flex-row',
             col: 'flex-col',
-            rowReverse: 'flex-row-reverse',
-            colReverse: 'flex-col-reverse',
+            'row-reverse': 'flex-row-reverse',
+            'col-reverse': 'flex-col-reverse',
         },
         align: {
             start: 'items-start',
@@ -59,10 +60,10 @@ const flex = cva('flex', {
         gap: {
             none: 'gap-0',
             xs: 'gap-1',
-            sm: 'gap-2',
-            md: 'gap-4',
-            lg: 'gap-6',
-            xl: 'gap-8',
+            sm: 'gap-2 sm:gap-3',
+            md: 'gap-4 sm:gap-6',
+            lg: 'gap-6 sm:gap-8',
+            xl: 'gap-8 sm:gap-10',
         },
         wrap: {
             true: 'flex-wrap',
@@ -83,20 +84,20 @@ interface FlexProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<t
 export const Flex = forwardRef<HTMLDivElement, FlexProps>(
     ({ className, direction, align, justify, gap, wrap, ...props }, ref) => (
         <div ref={ref} className={cn(flex({ direction, align, justify, gap, wrap }), className)} {...props} />
-)
+    )
 )
 Flex.displayName = 'Flex'
 
-// Stack Component (simplified Flex for common use case)
+// Stack Component - Simplified vertical flex
 const stack = cva('flex flex-col', {
     variants: {
         spacing: {
             none: 'gap-0',
             xs: 'gap-1',
-            sm: 'gap-2',
-            md: 'gap-4',
-            lg: 'gap-6',
-            xl: 'gap-8',
+            sm: 'gap-2 sm:gap-3',
+            md: 'gap-4 sm:gap-6',
+            lg: 'gap-6 sm:gap-8',
+            xl: 'gap-8 sm:gap-12',
         },
         align: {
             start: 'items-start',
@@ -113,6 +114,6 @@ interface StackProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<
 export const Stack = forwardRef<HTMLDivElement, StackProps>(
     ({ className, spacing, align, ...props }, ref) => (
         <div ref={ref} className={cn(stack({ spacing, align }), className)} {...props} />
-)
+    )
 )
 Stack.displayName = 'Stack'
