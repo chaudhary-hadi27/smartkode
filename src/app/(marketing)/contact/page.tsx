@@ -99,12 +99,12 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="text-white font-semibold mb-1">WhatsApp</h3>
                                         <a
-                                            href="https://wa.me/+923004479894"
+                                            href="https://wa.me/+923259299969"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-gray-300 hover:text-white transition-colors duration-200"
                                         >
-                                            +92 300 4479894
+                                            +92 325 9299969
                                         </a>
                                     </div>
                                 </div>
@@ -120,20 +120,20 @@ export default function ContactPage() {
                                 </div>
                             </div>
 
-                            {/* Social Links */}
-                            <div className="pt-6">
-                                <h3 className="text-white font-semibold mb-4">Connect With Us</h3>
-                                <div className="flex gap-4">
-                                    <a
-                                        href="https://www.linkedin.com/in/chaudharyhadi-ai-engineer/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
-                                    >
-                                        LinkedIn
-                                    </a>
-                                </div>
-                            </div>
+                            {/*/!* Social Links *!/*/}
+                            {/*<div className="pt-6">*/}
+                            {/*    <h3 className="text-white font-semibold mb-4">Connect With Us</h3>*/}
+                            {/*    <div className="flex gap-4">*/}
+                            {/*        <a*/}
+                            {/*            href="https://www.linkedin.com/in/chaudharyhadi-ai-engineer/"*/}
+                            {/*            target="_blank"*/}
+                            {/*            rel="noopener noreferrer"*/}
+                            {/*            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"*/}
+                            {/*        >*/}
+                            {/*            LinkedIn*/}
+                            {/*        </a>*/}
+                            {/*    </div>*/}
+                            {/*</div>*/}
                         </motion.div>
 
                         {/* Right Side - Contact Form */}
@@ -184,7 +184,7 @@ export default function ContactPage() {
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                                 <a
-                                    href="https://wa.me/+923004479894"
+                                    href="https://wa.me/+923259299969"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group bg-gradient-to-r from-white to-gray-100 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl"

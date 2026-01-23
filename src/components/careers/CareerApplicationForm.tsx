@@ -232,7 +232,7 @@ export const CareerApplicationForm: React.FC = () => {
             </div>
 
             <p className="text-center text-gray-500 text-sm mt-6">
-                Questions? Email us at <a href="mailto:careers@smartkode.io" className="text-gray-400 hover:text-white">careers@smartkode.io</a>
+                Questions? Email us at <a href="mailto:info@smartkode.io" className="text-gray-400 hover:text-white">info@smartkode.io</a>
             </p>
         </div>
     );
