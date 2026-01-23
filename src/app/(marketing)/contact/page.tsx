@@ -1,427 +1,223 @@
+// src/app/(marketing)/contact/page.tsx
 "use client";
 
-import { useState, useCallback, JSX } from "react";
-import { MessageCircle, Mail, Zap, Send } from "lucide-react";
-import ReCAPTCHA from "react-google-recaptcha";
+import Head from "next/head";
+import { motion } from "framer-motion";
+import { Mail, MessageCircle, MapPin, Zap } from "lucide-react";
+import { ContactForm } from "@/components/shared/ContactForm";
+import { Toaster } from "react-hot-toast";
 
-interface FormData {
-  name: string;
-  email: string;
-  message: string;
-}
+const fadeIn = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+};
 
-interface ContactResponse {
-  success: boolean;
-  message?: string;
-}
+export default function ContactPage() {
+    return (
+        <>
+            <Toaster position="top-right" />
 
-export default function ContactPage(): JSX.Element {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [success, setSuccess] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [captcha, setCaptcha] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    message: "",
-  });
-
-  const handleChange = useCallback((
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-    // Clear error when user starts typing
-    if (error) {
-      setError("");
-    }
-  }, [error]);
-
-  const handleCaptchaChange = useCallback((token: string | null): void => {
-    setCaptcha(token);
-    if (error && token) {
-      setError("");
-    }
-  }, [error]);
-
-  const validateForm = (): boolean => {
-    if (!formData.name.trim()) {
-      setError("Name is required");
-      return false;
-    }
-    if (!formData.email.trim()) {
-      setError("Email is required");
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError("Please enter a valid email address");
-      return false;
-    }
-    if (!formData.message.trim()) {
-      setError("Message is required");
-      return false;
-    }
-    if (!captcha) {
-      setError("Please complete the reCAPTCHA verification");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
-  ): Promise<void> => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-    setSuccess(false);
-    setError("");
-
-    const data = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      message: formData.message.trim(),
-      token: captcha,
-    };
-
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { 
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result: ContactResponse = await res.json();
-
-      if (res.ok && result.success) {
-        setFormData({ name: "", email: "", message: "" });
-        setCaptcha(null);
-        setSuccess(true);
-        // Reset reCAPTCHA
-        if (window.grecaptcha) {
-          window.grecaptcha.reset();
-        }
-        setTimeout(() => {
-          setSuccess(false);
-        }, 5000);
-      } else {
-        setError(result.message || "Failed to send message. Please try again.");
-      }
-    } catch (err) {
-      console.error("Contact form error:", err);
-      setError("Network error. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const isFormValid = formData.name.trim() && 
-                     formData.email.trim() && 
-                     formData.message.trim() && 
-                     captcha;
-
-  return (
-    <div className="bg-black text-white min-h-screen">
-      <div className="px-4 sm:px-6 lg:px-8 xl:px-16 py-12 sm:py-16 lg:py-20">
-        {/* Hero Section */}
-        <header className="text-center mb-16 sm:mb-20 lg:mb-24 max-w-6xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 sm:mb-8 leading-tight tracking-tight">
-            Get In Touch
-          </h1>
-          <p className="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl mx-auto px-4">
-            Ready to transform your business with cutting-edge technology? Let&apos;s
-            discuss your project and explore how we can help you achieve your goals.
-          </p>
-        </header>
-
-        {/* Main Contact Section */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 xl:gap-24">
-          {/* Left Side - Contact Information */}
-          <div className="space-y-8 lg:space-y-12">
-            <div className="space-y-6">
-              <div className="flex items-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl flex items-center justify-center mr-6 text-white shadow-xl border border-zinc-700/50">
-                  <MessageCircle className="w-8 h-8" />
-                </div>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                Let&apos;s Build Something Amazing Together
-              </h2>
-
-              <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-8">
-                Have questions about AI solutions or want to start a project with us?
-                Drop us a message and we&apos;ll get back to you within 24 hours.
-              </p>
-            </div>
-
-            {/* Contact Details */}
-            <div className="space-y-6">
-              <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
-                <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">Email Us</h3>
-                  <a
-                    href="mailto:info@smartkode.io"
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    info@smartkode.io
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
-                <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">WhatsApp</h3>
-                  <a
-                    href="https://wa.me/+923004479894"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    +92 300 4479894
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="pt-6">
-              <h3 className="text-white font-semibold mb-4">Connect With Us</h3>
-              <div className="flex gap-4">
-                <a
-                  href="https://www.linkedin.com/in/chaudharyhadi-ai-engineer/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - Contact Form */}
-          <div className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 shadow-2xl border border-zinc-800">
-            <div className="mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">Send Us a Message</h2>
-              <p className="text-gray-400 mb-6">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse inline-block mr-2" />
-                We typically respond within 24 hours
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 text-left">
-              <div>
-                <label htmlFor="contact-name" className="sr-only">
-                  Your Name
-                </label>
-                <input
-                  id="contact-name"
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm sm:text-base"
-                  disabled={loading}
-                  autoComplete="name"
+            <Head>
+                <title>Contact Us | SmartKode - Get in Touch</title>
+                <meta
+                    name="description"
+                    content="Contact SmartKode for AI solutions, web development, and technology services. We're here to help transform your business."
                 />
-              </div>
+            </Head>
 
-              <div>
-                <label htmlFor="contact-email" className="sr-only">
-                  Your Email
-                </label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all text-sm sm:text-base"
-                  disabled={loading}
-                  autoComplete="email"
-                />
-              </div>
+            <div className="bg-black text-white min-h-screen">
+                <div className="px-4 sm:px-6 lg:px-8 xl:px-16 py-12 sm:py-16 lg:py-20">
 
-              <div>
-                <label htmlFor="contact-message" className="sr-only">
-                  Your Message
-                </label>
-                <textarea
-                  id="contact-message"
-                  name="message"
-                  placeholder="Tell us about your project..."
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-xl bg-black/40 border border-gray-700 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white outline-none transition-all resize-vertical text-sm sm:text-base"
-                  disabled={loading}
-                />
-              </div>
+                    {/* Hero Section */}
+                    <motion.header
+                        initial="initial"
+                        whileInView="animate"
+                        viewport={{ once: true }}
+                        variants={fadeIn}
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-16 sm:mb-20 lg:mb-24 max-w-6xl mx-auto"
+                    >
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold mb-6 sm:mb-8 leading-tight tracking-tight">
+                            Get In Touch
+                        </h1>
+                        <p className="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl mx-auto px-4">
+                            Ready to transform your business with cutting-edge technology? Let&apos;s
+                            discuss your project and explore how we can help you achieve your goals.
+                        </p>
+                    </motion.header>
 
-              {/* reCAPTCHA */}
-              <div className="pt-2 flex justify-center">
-                <ReCAPTCHA
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                  theme="dark"
-                  onChange={handleCaptchaChange}
-                  onExpired={() => setCaptcha(null)}
-                  onError={() => {
-                    setCaptcha(null);
-                    setError("reCAPTCHA error. Please try again.");
-                  }}
-                />
-              </div>
+                    {/* Main Content Grid */}
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 xl:gap-24">
 
-              {/* Error Display */}
-              {error && (
-                <div className="text-center p-4 bg-red-900/20 border border-red-700/50 rounded-xl">
-                  <p className="text-red-400 font-medium">{error}</p>
+                        {/* Left Side - Contact Info */}
+                        <motion.div
+                            initial="initial"
+                            whileInView="animate"
+                            viewport={{ once: true }}
+                            variants={fadeIn}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="space-y-8 lg:space-y-12"
+                        >
+                            <div className="space-y-6">
+                                <div className="flex items-center mb-6">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl flex items-center justify-center mr-6 text-white shadow-xl border border-zinc-700/50">
+                                        <MessageCircle className="w-8 h-8" />
+                                    </div>
+                                </div>
+
+                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                                    Let&apos;s Build Something Amazing Together
+                                </h2>
+
+                                <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-8">
+                                    Have questions about AI solutions or want to start a project with us?
+                                    Drop us a message and we&apos;ll get back to you within 24 hours.
+                                </p>
+                            </div>
+
+                            {/* Contact Details */}
+                            <div className="space-y-6">
+                                <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
+                                        <Mail className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-semibold mb-1">Email Us</h3>
+                                        <a
+                                            href="mailto:info@smartkode.io"
+                                            className="text-gray-300 hover:text-white transition-colors duration-200"
+                                        >
+                                            info@smartkode.io
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
+                                        <MessageCircle className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-semibold mb-1">WhatsApp</h3>
+                                        <a
+                                            href="https://wa.me/+923004479894"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-gray-300 hover:text-white transition-colors duration-200"
+                                        >
+                                            +92 300 4479894
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-600/50">
+                                        <MapPin className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-semibold mb-1">Location</h3>
+                                        <p className="text-gray-300">Lahore, Pakistan</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social Links */}
+                            <div className="pt-6">
+                                <h3 className="text-white font-semibold mb-4">Connect With Us</h3>
+                                <div className="flex gap-4">
+                                    <a
+                                        href="https://www.linkedin.com/in/chaudharyhadi-ai-engineer/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-gray-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+                                    >
+                                        LinkedIn
+                                    </a>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Right Side - Contact Form */}
+                        <motion.div
+                            initial="initial"
+                            whileInView="animate"
+                            viewport={{ once: true }}
+                            variants={fadeIn}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                        >
+                            <ContactForm
+                                title="Send Us a Message"
+                                description=""
+                                variant="contact"
+                                showTrustBadge={true}
+                                containerClassName="bg-zinc-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 shadow-2xl border border-zinc-800"
+                            />
+                        </motion.div>
+                    </div>
+
+                    {/* CTA Section */}
+                    <motion.section
+                        initial="initial"
+                        whileInView="animate"
+                        viewport={{ once: true }}
+                        variants={fadeIn}
+                        transition={{ duration: 0.6 }}
+                        className="max-w-6xl mx-auto mt-20 sm:mt-24 lg:mt-32 text-center"
+                        role="region"
+                        aria-labelledby="cta-heading"
+                    >
+                        <div className="bg-gradient-to-br from-zinc-900/80 to-black/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 shadow-2xl border border-zinc-800">
+                            <h2
+                                id="cta-heading"
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight"
+                            >
+                                Ready to Start Your Project?
+                            </h2>
+                            <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 leading-relaxed max-w-3xl mx-auto">
+                                Join hundreds of satisfied clients who have transformed their businesses
+                                with our AI and technology solutions. Let&apos;s accelerate your growth together.
+                            </p>
+
+                            <p className="text-sm text-gray-400 mb-6 sm:mb-8 flex items-center justify-center gap-2">
+                                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                Trusted by businesses worldwide
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                <a
+                                    href="https://wa.me/+923004479894"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group bg-gradient-to-r from-white to-gray-100 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl"
+                                >
+                                    <Zap className="w-5 h-5 mr-2" />
+                                    Kickstart My Project
+                                    <div className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300">
+                                        <svg
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </div>
+                                </a>
+
+                                <a
+                                    href="mailto:info@smartkode.io"
+                                    className="group bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300 inline-flex items-center"
+                                >
+                                    <Mail className="w-5 h-5 mr-2" />
+                                    Email Discussion
+                                </a>
+                            </div>
+                        </div>
+                    </motion.section>
                 </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading || !isFormValid}
-                className="bg-white text-black px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    Send Message
-                  </>
-                )}
-              </button>
-
-              {success && (
-                <div className="text-center p-4 bg-green-900/20 border border-green-700/50 rounded-xl">
-                  <p className="text-green-400 font-medium">
-                    Message sent successfully! We&apos;ll get back to you soon.
-                  </p>
-                </div>
-              )}
-            </form>
-
-            {/* Quick Contact Options */}
-            <div className="mt-10 pt-8 border-t border-zinc-700/50">
-              <p className="text-gray-400 text-sm mb-4 text-center">
-                Or reach out directly:
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="mailto:info@smartkode.io"
-                  className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
-                  aria-label="Send us an email"
-                >
-                  <Mail className="w-4 h-4" />
-                  Email Us
-                </a>
-                <a
-                  href="https://wa.me/+923004479894"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
-                  aria-label="Chat with us on WhatsApp"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Chat on WhatsApp
-                </a>
-              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Additional CTA Section - Inspired by your services */}
-        <section 
-          className="max-w-6xl mx-auto mt-20 sm:mt-24 lg:mt-32 text-center"
-          role="region"
-          aria-labelledby="cta-heading"
-        >
-          <div className="bg-gradient-to-br from-zinc-900/80 to-black/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-8 sm:p-12 lg:p-16 shadow-2xl border border-zinc-800">
-            <h2 
-              id="cta-heading"
-              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight"
-            >
-              Ready to Start Your Project?
-            </h2>
-            <p className="text-gray-300 text-base sm:text-lg md:text-xl mb-8 sm:mb-10 leading-relaxed max-w-3xl mx-auto">
-              Join hundreds of satisfied clients who have transformed their businesses
-              with our AI and technology solutions. Let&apos;s accelerate your growth together.
-            </p>
-            
-            <p className="text-sm text-gray-400 mb-6 sm:mb-8 flex items-center justify-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Trusted by businesses worldwide
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="https://wa.me/+923004479894"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-gradient-to-r from-white to-gray-100 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:from-gray-100 hover:to-gray-200 transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl"
-              >
-                <Zap className="w-5 h-5 mr-2" />
-                Kickstart My Project
-                <div className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300">
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </a>
-              
-              <a
-                href="mailto:info@smartkode.io"
-                className="group bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-black transition-all duration-300 inline-flex items-center"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Email Discussion
-              </a>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-// Type declaration for grecaptcha global
-declare global {
-  interface Window {
-    grecaptcha: {
-      reset: () => void;
-      render: (container: string | HTMLElement, parameters: object) => number;
-      getResponse: (widgetId?: number) => string;
-    };
-  }
+        </>
+    );
 }

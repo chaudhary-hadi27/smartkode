@@ -1,4 +1,4 @@
-import ServiceTemplate from "@/components/templates/ServiceTemplate"
+import ServiceTemplate from "@/components/services/ServiceTemplate"
 import { getServiceData } from "@/data/services/servicesData"
 
 export default function AIServicePage() {

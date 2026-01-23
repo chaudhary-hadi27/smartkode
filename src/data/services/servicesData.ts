@@ -1,6 +1,17 @@
 // ============================================
 // ALL SERVICES DATA - Single Source of Truth
 // ============================================
+import {
+    Brain,
+    Code,
+    BarChart3,
+    Zap,
+    MessageCircle,
+    TrendingUp,
+    Server,
+    Palette,
+    type LucideIcon,
+} from 'lucide-react';
 
 export interface FAQ {
     question: string
@@ -12,6 +23,17 @@ export interface ServiceSection {
     text: string
     image: string
     list: string[]
+}
+
+export interface ServiceCard {
+    id: string;
+    title: string;
+    description: string;
+    image: string;
+    features: string[];
+    icon: LucideIcon;
+    seoKeywords: string[];
+    route: string;
 }
 
 export interface ServiceData {
@@ -26,6 +48,131 @@ export interface ServiceData {
         keywords: string
     }
 }
+
+
+export const serviceCards: ServiceCard[] = [
+    {
+        id: 'ai',
+        title: 'AI Development',
+        description:
+            'Custom AI models that solve real business challenges. From machine learning to computer vision, we build intelligent systems that work.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343879/ai_j8vo7b.jpg',
+        features: [
+            'Custom Machine Learning Models',
+            'Computer Vision & NLP',
+            'AI Model Deployment',
+        ],
+        icon: Brain,
+        seoKeywords: ['AI development', 'machine learning', 'computer vision', 'NLP'],
+        route: '/services/ai',
+    },
+    {
+        id: 'web',
+        title: 'Web Development',
+        description:
+            'High-performance web platforms built with modern frameworks. Fast, responsive, and designed to scale with your business.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343887/web_hlmskm.jpg',
+        features: [
+            'Next.js & React Applications',
+            'Full-Stack Development',
+            'Performance Optimization',
+        ],
+        icon: Code,
+        seoKeywords: ['web development', 'Next.js', 'React', 'full-stack'],
+        route: '/services/web',
+    },
+    {
+        id: 'chatbot',
+        title: 'Chatbot Development',
+        description:
+            'Intelligent chatbots that engage customers 24/7. Deploy across web, WhatsApp, and messaging platforms.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343734/chatbot_pd1xt8.jpg',
+        features: [
+            'GPT-Powered Chatbots',
+            'Multi-Platform Integration',
+            'Natural Conversations',
+        ],
+        icon: MessageCircle,
+        seoKeywords: ['chatbot development', 'GPT chatbots', 'WhatsApp bot'],
+        route: '/services/chatbot',
+    },
+    {
+        id: 'automation',
+        title: 'Automation Services',
+        description:
+            'Automate repetitive tasks and streamline workflows. Focus on what matters while we handle the routine work.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343696/automation_hq82sz.jpg',
+        features: [
+            'Process Automation',
+            'Workflow Integration',
+            'Custom Bot Development',
+        ],
+        icon: Zap,
+        seoKeywords: ['process automation', 'workflow automation', 'RPA'],
+        route: '/services/automation',
+    },
+    {
+        id: 'data',
+        title: 'Data Analytics',
+        description:
+            'Transform data into actionable insights. We build dashboards and analytics systems that help you make better decisions.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753343587/data_sa6wwg.jpg',
+        features: [
+            'Real-Time Dashboards',
+            'Business Intelligence',
+            'Predictive Analytics',
+        ],
+        icon: BarChart3,
+        seoKeywords: ['data analytics', 'business intelligence', 'dashboards'],
+        route: '/services/data',
+    },
+    {
+        id: 'marketing',
+        title: 'Digital Marketing',
+        description:
+            'Strategic digital marketing campaigns that drive growth. From social media to SEO, we help you reach your target audience effectively.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903869/digital-marketing_u4rd2a.webp',
+        features: [
+            'Social Media Marketing',
+            'SEO & Content Strategy',
+            'PPC Campaign Management',
+        ],
+        icon: TrendingUp,
+        seoKeywords: ['digital marketing', 'SEO services', 'social media marketing'],
+        route: '/services/marketing',
+    },
+    {
+        id: 'devops',
+        title: 'DevOps',
+        description:
+            'Streamline your development pipeline with modern DevOps practices. Deploy faster, scale better, and maintain reliability.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753904008/devops_ybbrwv.jpg',
+        features: [
+            'CI/CD Pipeline Setup',
+            'Cloud Infrastructure',
+            'Monitoring & Deployment',
+        ],
+        icon: Server,
+        seoKeywords: ['DevOps services', 'CI/CD', 'cloud infrastructure'],
+        route: '/services/devops',
+    },
+    {
+        id: 'uiux',
+        title: 'UI/UX Design',
+        description:
+            'Create intuitive and beautiful user experiences. We design interfaces that users love and businesses need.',
+        image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1753903709/UI-UX_tp8ivo.webp',
+        features: [
+            'User Experience Research',
+            'Interface Design',
+            'Prototyping & Testing',
+        ],
+        icon: Palette,
+        seoKeywords: ['UI/UX design', 'user experience', 'interface design'],
+        route: '/services/uiux',
+    },
+];
+
 
 export const servicesData: Record<string, ServiceData> = {
     ai: {
