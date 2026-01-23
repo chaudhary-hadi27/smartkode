@@ -81,7 +81,7 @@ export const AboutPageTemplate: React.FC<AboutPageTemplateProps> = ({ data }) =>
                                     alt={`${data.founder.name} – ${data.founder.role}`}
                                     width={256}
                                     height={256}
-                                    className="w-full h-full object-cover object-bottom "
+                                    className="w-full h-full object-cover object-bottom scale-125 transition-transform duration-500 hover:scale-150"
                                     priority
                                 />
                             </div>
