@@ -213,7 +213,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                     Email Us
                 </a>
                 <a
-                    href="https://wa.me/+923004479894"
+                    href="https://wa.me/+923259299969"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-zinc-800/30"
