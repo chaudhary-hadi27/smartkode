@@ -39,23 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# cache
-.idea
-
-
-# dependencies
-node_modules/
-.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# next.js and turbo cache
-.next/
-node_modules/.cache/ turbo/
-.turbo/
-out/

@@ -1,0 +1,13 @@
+{
+  "name": "@smartkode/validators",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@smartkode/config": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

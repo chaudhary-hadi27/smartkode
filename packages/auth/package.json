@@ -1,0 +1,16 @@
+{
+  "name": "@smartkode/auth",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/config.ts",
+  "dependencies": {
+    "@smartkode/database": "workspace:^",
+    "@types/bcryptjs": "^3.0.0",
+    "bcryptjs": "^3.0.2",
+    "next-auth": "5.0.0-beta.25"
+  },
+  "devDependencies": {
+    "@smartkode/config": "workspace:*",
+    "typescript": "^5.0.0"
+  }
+}

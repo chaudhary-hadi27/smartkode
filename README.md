@@ -1,6 +1,6 @@
 # SmartKode 🚀
 
-**Website:** [smartkode.io](https://smartkode.io)  
+**Website:** [smartkode.co](https://smartkode.co)  
 
 SmartKode is a next-generation **AI & Automation company** dedicated to building smart, scalable, and efficient solutions for businesses and individuals.  
 We focus on **Generative AI, Automation, and Intelligent Chatbots** that help our clients save time, reduce costs, and innovate faster.  
@@ -40,8 +40,8 @@ We aim to empower people and organizations by delivering cutting-edge AI solutio
 ---
 
 ## 📞 Contact Us
-📧 Email: info@smartkode.io  
-🌐 Website: [smartkode.io](https://smartkode.io)   
+📧 Email: info@smartkode.co  
+🌐 Website: [smartkode.co](https://smartkode.co)   
 💼 LinkedIn: [SmartKode](https://linkedin.com/company/smartkode)  
 
 ---
