@@ -32,11 +32,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const isValid = await bcrypt.compare(password, user.password_hash)
-        if (!isValid) {
-          return null
-        }
+        if (!isValid) return null
 
-        return { id: user.id, email: user.email, role: user.role, is_active: user.is_active }
+        const agency = await prisma.agency.findUnique({ where: { user_id: user.id } })
+        return { id: user.id, email: user.email, role: user.role, is_active: user.is_active, is_rejected: agency?.is_rejected ?? false }
       },
     }),
     Credentials({
@@ -58,7 +57,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             where: { id: credentials.userId as string },
           })
           if (user) {
-            return { id: user.id, email: user.email, role: user.role, is_active: user.is_active }
+            const agency = await prisma.agency.findUnique({ where: { user_id: user.id } })
+            return { id: user.id, email: user.email, role: user.role, is_active: user.is_active, is_rejected: agency?.is_rejected ?? false }
           }
         }
         return null
@@ -70,6 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as any).role
         token.is_active = (user as any).is_active
+        token.is_rejected = (user as any).is_rejected
       }
       return token
     },
@@ -77,6 +78,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         (session.user as any).role = token.role as string
         (session.user as any).is_active = token.is_active as boolean
+        (session.user as any).is_rejected = token.is_rejected as boolean
         session.user.id = token.sub as string
       }
       return session

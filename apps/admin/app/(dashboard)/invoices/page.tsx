@@ -38,15 +38,35 @@ export default async function InvoicesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Collected</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-emerald-400">${totalRevenue.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Pending Payment</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-blue-400">${totalPending.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-red-400">${totalOverdue.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Your Net Profit</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-amber-500">${totalAdminCut.toLocaleString()}</p></CardContent></Card>
+      {/* Invoice Stats - Big curved rectangle in grey-800 (sidebar hover match) */}
+      <div className="rounded-3xl border border-gray-700 bg-gray-800 p-6 shadow-2xl">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y-2 lg:divide-y-0 lg:divide-x divide-gray-700">
+
+          <div className="flex flex-col space-y-1 first:pt-0 pt-4 lg:pt-0 lg:px-6 first:pl-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Total Collected</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalRevenue.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Paid invoices revenue</p>
+          </div>
+
+          <div className="flex flex-col space-y-1 pt-4 lg:pt-0 lg:px-6">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Pending Payment</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalPending.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Awaiting client payment</p>
+          </div>
+
+          <div className="flex flex-col space-y-1 pt-4 lg:pt-0 lg:px-6">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Overdue</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalOverdue.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Past due date invoices</p>
+          </div>
+
+          <div className="flex flex-col space-y-1 pt-4 lg:pt-0 lg:px-6 last:pr-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Your Net Profit</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalAdminCut.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Your 50% admin share</p>
+          </div>
+
+        </div>
       </div>
 
       <Card>

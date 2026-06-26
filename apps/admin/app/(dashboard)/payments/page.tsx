@@ -39,13 +39,29 @@ export default async function PaymentsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Confirmed</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-emerald-400">${totalConfirmed.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Awaiting Confirmation</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-amber-400">${totalPending.toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Transactions</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold">{payments.length}</p></CardContent></Card>
+      {/* Payment Stats - Big curved rectangle in grey-800 (sidebar hover match) */}
+      <div className="rounded-3xl border border-gray-700 bg-gray-800 p-6 shadow-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-gray-700">
+
+          <div className="flex flex-col space-y-1 first:pt-0 pt-4 sm:pt-0 sm:px-6 first:pl-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Total Confirmed</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalConfirmed.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Successfully collected revenue</p>
+          </div>
+
+          <div className="flex flex-col space-y-1 pt-4 sm:pt-0 sm:px-6">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Awaiting Confirmation</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalPending.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Payments pending review</p>
+          </div>
+
+          <div className="flex flex-col space-y-1 pt-4 sm:pt-0 sm:px-6 last:pr-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Total Transactions</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">{payments.length}</span>
+            <p className="text-xs text-zinc-500 font-medium">All payment submissions</p>
+          </div>
+
+        </div>
       </div>
 
       <Card>

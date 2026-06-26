@@ -7,7 +7,7 @@ export async function approveAgency(agencyId: string) {
   await prisma.$transaction([
     prisma.agency.update({
       where: { id: agencyId },
-      data: { is_active: true },
+      data: { is_active: true, is_rejected: false },
     }),
     prisma.user.updateMany({
       where: { agency: { id: agencyId } },
@@ -19,15 +19,17 @@ export async function approveAgency(agencyId: string) {
 }
 
 export async function rejectAgency(agencyId: string) {
-  const agency = await prisma.agency.findUnique({
-    where: { id: agencyId },
-    select: { user_id: true },
-  });
-  if (!agency) return;
-
+  // Mark as rejected — data is preserved for records, portal access is blocked
   await prisma.$transaction([
-    prisma.agency.delete({ where: { id: agencyId } }),
-    prisma.user.delete({ where: { id: agency.user_id } }),
+    prisma.agency.update({
+      where: { id: agencyId },
+      data: { is_active: false, is_rejected: true },
+    }),
+    prisma.user.updateMany({
+      where: { agency: { id: agencyId } },
+      data: { is_active: false },
+    }),
   ]);
   revalidatePath("/agencies");
+  revalidatePath("/overview");
 }

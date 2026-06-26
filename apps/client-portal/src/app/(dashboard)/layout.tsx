@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { AdminSidebar } from "../../components/admin-sidebar";
+import { ClientSidebar } from "../../components/client-sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen]     = useState(false);
+  const [mounted, setMounted]   = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     if (window.innerWidth >= 1024) setIsOpen(true);
 
@@ -19,27 +17,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleSidebar = () => setIsOpen((prev) => !prev);
-
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white/20">
-      <AdminSidebar isOpen={isOpen} closeSidebar={() => setIsOpen(false)} />
+      <ClientSidebar isOpen={isOpen} closeSidebar={() => setIsOpen(false)} />
 
-      {/* Fixed top header — exact same as website */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-black px-4 py-4 shadow-md transition-all duration-500 ease-in-out">
+      {/* Fixed top header */}
+      <header
+        className={`fixed top-0 left-0 w-full z-50 bg-black px-4 py-4 transition-all duration-300 ${
+          scrolled ? "shadow-md border-b border-gray-900" : ""
+        }`}
+      >
         <div className="flex items-center justify-between">
           {/* Desktop */}
           <div className="hidden md:flex items-center space-x-5 pl-4">
             <div className="w-[160px] flex items-center">
               {scrolled ? (
-                <Image
-                  src="/logo.png"
-                  alt="SmartKode Logo"
-                  width={48}
-                  height={48}
-                  priority
-                  className="w-10 h-10 object-contain"
-                />
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                  <span className="text-black font-black text-xs">SK</span>
+                </div>
               ) : (
                 <h1 className="text-white text-2xl font-bold tracking-wide">SmartKode</h1>
               )}
@@ -50,9 +45,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 type="button"
                 aria-label="Toggle sidebar"
                 aria-expanded={isOpen}
-                aria-controls="admin-sidebar"
-                onClick={toggleSidebar}
-                className="w-6 h-6 rounded-lg border border-gray-600 flex items-center justify-center bg-transparent hover:scale-110 hover:shadow-lg hover:ring-2 hover:ring-white transition-all duration-500 ease-in-out"
+                aria-controls="client-sidebar"
+                onClick={() => setIsOpen((p) => !p)}
+                className="w-6 h-6 rounded-lg border border-gray-600 flex items-center justify-center bg-transparent hover:scale-110 hover:ring-2 hover:ring-white transition-all duration-300"
               >
                 <div
                   className={`w-px h-3 transform transition-transform duration-300 bg-white ${
@@ -66,14 +61,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Mobile */}
           <div className="flex md:hidden w-full items-center justify-between px-2">
             {scrolled ? (
-              <Image
-                src="/logo.png"
-                alt="SmartKode Logo"
-                width={40}
-                height={40}
-                priority
-                className="w-9 h-9 object-contain"
-              />
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                <span className="text-black font-black text-xs">SK</span>
+              </div>
             ) : (
               <h1 className="text-white text-xl font-semibold tracking-wide">SmartKode</h1>
             )}
@@ -83,9 +73,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 type="button"
                 aria-label="Toggle sidebar"
                 aria-expanded={isOpen}
-                aria-controls="admin-sidebar"
-                onClick={toggleSidebar}
-                className="w-6 h-6 rounded-lg border border-gray-600 flex items-center justify-center bg-transparent hover:scale-110 hover:shadow-lg hover:ring-2 hover:ring-white transition-all duration-500 ease-in-out"
+                aria-controls="client-sidebar"
+                onClick={() => setIsOpen((p) => !p)}
+                className="w-6 h-6 rounded-lg border border-gray-600 flex items-center justify-center bg-transparent hover:scale-110 hover:ring-2 hover:ring-white transition-all duration-300"
               >
                 <div
                   className={`w-px h-3 transform transition-transform duration-300 bg-white ${
@@ -104,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           isOpen ? "lg:ml-64" : "lg:ml-0"
         }`}
       >
-        <div className="flex-1 px-4 py-6 md:px-8 bg-black overflow-x-hidden">
+        <div className="flex-1 px-4 py-6 md:px-6 lg:px-10 bg-black overflow-x-hidden">
           {children}
         </div>
       </main>

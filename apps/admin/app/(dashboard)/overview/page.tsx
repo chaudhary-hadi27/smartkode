@@ -46,59 +46,37 @@ export default async function OverviewPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Admin Profit</CardTitle>
-            <span className="text-amber-500 font-bold">$</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalAdminProfit.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Your {adminPct}% split across all projects
-            </p>
-          </CardContent>
-        </Card>
+      {/* Top Metrics Panel - Big curved rectangle in grey-800 (sidebar hover match) */}
+      <div className="rounded-3xl border border-gray-700 bg-gray-800 p-8 shadow-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 divide-y sm:divide-y-0 lg:divide-x divide-gray-700">
+          
+          <div className="flex flex-col space-y-2 first:pt-0 pt-6 sm:pt-0 lg:px-6 first:pl-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Net Admin Profit</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalAdminProfit.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Your {adminPct}% split across all projects</p>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Network Volume</CardTitle>
-            <span className="text-blue-500 font-bold">∑</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalVolume.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Gross revenue generated
-            </p>
-          </CardContent>
-        </Card>
+          <div className="flex flex-col space-y-2 pt-6 sm:pt-0 lg:px-6">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Total Network Volume</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">${totalVolume.toLocaleString()}</span>
+            <p className="text-xs text-zinc-500 font-medium">Gross revenue generated</p>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Agencies</CardTitle>
-            <span className="text-emerald-500 font-bold">A</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAgencies}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Generating leads globally
-            </p>
-          </CardContent>
-        </Card>
+          <div className="flex flex-col space-y-2 pt-6 sm:pt-0 lg:px-6">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Active Agencies</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">{activeAgencies}</span>
+            <p className="text-xs text-zinc-500 font-medium">Generating leads globally</p>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <span className="text-purple-500 font-bold">P</span>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalProjects}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Through the lifecycle
-            </p>
-          </CardContent>
-        </Card>
+          <div className="flex flex-col space-y-2 pt-6 sm:pt-0 lg:px-6 last:pr-0">
+            <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Total Projects</span>
+            <span className="text-4xl font-extrabold text-white tracking-tight font-mono">{totalProjects}</span>
+            <p className="text-xs text-zinc-500 font-medium">Through the lifecycle</p>
+          </div>
+
+        </div>
       </div>
+
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4">
