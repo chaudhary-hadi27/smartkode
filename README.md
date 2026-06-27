@@ -1,6 +1,6 @@
 # SmartKode 🚀
 
-**Website:** [smartkode.io](https://smartkode.io)  
+**Website:** [smartkode.co](https://smartkode.io)  
 
 SmartKode is a next-generation **AI & Automation company** dedicated to building smart, scalable, and efficient solutions for businesses and individuals.  
 We focus on **Generative AI, Automation, and Intelligent Chatbots** that help our clients save time, reduce costs, and innovate faster.  
