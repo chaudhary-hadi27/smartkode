@@ -59,7 +59,7 @@ export const aboutPagesData: Record<string, AboutPageData> = {
         founder: {
             name: 'Hadi',
             role: 'Founder & AI Architect',
-            image: 'https://res.cloudinary.com/dpvcr9xf6/image/upload/v1769090723/hadi_atnqgp.jpg',
+            image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783147185/WhatsApp_Image_2026-06-27_at_8.40.13_AM_pltutq.jpg',
             description: 'Building intelligent software with clean code, scalable systems, and meaningful innovation in AI and data.',
         },
 

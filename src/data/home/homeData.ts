@@ -71,107 +71,39 @@ export const approachSteps: ApproachStep[] = [
     },
 ];
 
-// Testimonials
-export interface Testimonial {
+export interface TestimonialImage {
     id: number;
-    name: string;
-    role: string;
-    company: string;
     image: string;
-    rating: number;
-    content: string;
-    project: string;
-    result: string;
-    industry: string;
-    location: string;
-    highlight: string;
 }
 
-export const testimonials: Testimonial[] = [
+export const testimonialImages: TestimonialImage[] = [
     {
         id: 1,
-        name: 'Sarah Johnson',
-        role: 'Chief Technology Officer',
-        company: 'TechCorp Industries',
-        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'SmartKode.io transformed our entire digital infrastructure with their AI-powered solutions. The predictive analytics they implemented increased our operational efficiency by 300%. Their team\'s expertise in machine learning is absolutely phenomenal.',
-        project: 'AI-Powered Analytics Platform',
-        result: '300% efficiency increase',
-        industry: 'Technology',
-        location: 'San Francisco, USA',
-        highlight: 'AI Innovation Leader',
+        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 2,
-        name: 'Michael Chen',
-        role: 'Head of Digital Innovation',
-        company: 'Global Finance Corp',
-        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'Working with SmartKode.io was a game-changer for our fintech platform. Their custom software development and DevOps implementation reduced our deployment time from weeks to hours. The security measures they implemented are military-grade.',
-        project: 'Fintech Platform Development',
-        result: '95% faster deployment',
-        industry: 'Financial Services',
-        location: 'New York, USA',
-        highlight: 'Security Excellence',
+        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 3,
-        name: 'Emily Rodriguez',
-        role: 'VP of Product Development',
-        company: 'HealthTech Solutions',
-        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'The computer vision and NLP solutions SmartKode.io developed for our healthcare platform are revolutionary. Their chatbot handles 80% of patient inquiries automatically, and the diagnostic accuracy has improved by 40%.',
-        project: 'Healthcare AI Platform',
-        result: '40% diagnostic improvement',
-        industry: 'Healthcare',
-        location: 'Boston, USA',
-        highlight: 'Healthcare Innovation',
+        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 4,
-        name: 'David Kumar',
-        role: 'CEO & Founder',
-        company: 'E-Commerce Plus',
-        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'SmartKode.io\'s big data analytics and machine learning algorithms revolutionized our customer experience. Sales increased by 250% after implementing their recommendation engine. Their UI/UX design is world-class.',
-        project: 'E-Commerce ML Platform',
-        result: '250% sales increase',
-        industry: 'E-Commerce',
-        location: 'London, UK',
-        highlight: 'Revenue Growth',
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 5,
-        name: 'Lisa Thompson',
-        role: 'Chief Data Officer',
-        company: 'Manufacturing Pro',
-        image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'The predictive modeling and IoT integration SmartKode.io delivered exceeded all expectations. Equipment downtime reduced by 60%, and maintenance costs dropped significantly. Their team understands complex industrial requirements perfectly.',
-        project: 'Industrial IoT Platform',
-        result: '60% downtime reduction',
-        industry: 'Manufacturing',
-        location: 'Germany',
-        highlight: 'Industrial Excellence',
+        image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 6,
-        name: 'James Wilson',
-        role: 'Digital Transformation Lead',
-        company: 'Retail Innovations',
-        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-        rating: 5,
-        content: 'SmartKode.io\'s omnichannel digital marketing strategy and custom software solutions transformed our retail operations. Customer engagement increased by 180%, and our mobile app now has 5-star ratings consistently.',
-        project: 'Omnichannel Retail Platform',
-        result: '180% engagement boost',
-        industry: 'Retail',
-        location: 'Toronto, Canada',
-        highlight: 'Customer Experience',
+        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=400&fit=crop&crop=face',
     },
+    // Add more images below — they will auto-fill into the bell arc:
+    // { id: 7, image: 'https://...' },
+    // { id: 8, image: 'https://...' },
 ];
 
 // FAQ Data
@@ -239,28 +171,3 @@ export const faqs: FAQ[] = [
     },
 ];
 
-// Trusted Companies
-export interface Company {
-    name: string;
-    industry: string;
-    logo: {
-        type: string;
-        design: string;
-        color: string;
-    };
-}
-
-export const trustedCompanies: Company[] = [
-    { name: 'SwiftCargo', industry: 'Logistics', logo: { type: 'shape', design: 'truck', color: 'from-blue-600 to-blue-800' } },
-    { name: 'Vertex Consulting', industry: 'Business Advisory', logo: { type: 'geometric', design: 'hexagon', color: 'from-green-600 to-green-800' } },
-    { name: 'CodeCraft Studios', industry: 'Software Development', logo: { type: 'tech', design: 'circuit', color: 'from-purple-600 to-purple-800' } },
-    { name: 'BrandBoost Agency', industry: 'Marketing', logo: { type: 'marketing', design: 'megaphone', color: 'from-red-500 via-orange-500 to-yellow-500' } },
-    { name: 'TechFlow Systems', industry: 'IT Solutions', logo: { type: 'grid', design: 'squares', color: 'from-indigo-600 to-indigo-800' } },
-    { name: 'FlashDelivery', industry: 'Courier Services', logo: { type: 'speed', design: 'lightning', color: 'from-orange-600 to-orange-800' } },
-    { name: 'MegaMart', industry: 'Retail Chain', logo: { type: 'shopping', design: 'cart', color: 'from-emerald-600 to-emerald-800' } },
-    { name: 'StyleHub', industry: 'Fashion Retail', logo: { type: 'shopping', design: 'bag', color: 'from-pink-600 to-rose-600' } },
-    { name: 'UrbanBuilders', industry: 'Construction', logo: { type: 'building', design: 'tower', color: 'from-yellow-600 to-yellow-800' } },
-    { name: 'DevCore Technologies', industry: 'Software', logo: { type: 'code', design: 'brackets', color: 'from-cyan-600 to-cyan-800' } },
-    { name: 'NexGen Solutions', industry: 'Consulting', logo: { type: 'puzzle', design: 'connect', color: 'from-teal-600 to-teal-800' } },
-    { name: 'FreshMart Express', industry: 'Grocery Retail', logo: { type: 'shopping', design: 'store', color: 'from-green-500 to-lime-600' } },
-];

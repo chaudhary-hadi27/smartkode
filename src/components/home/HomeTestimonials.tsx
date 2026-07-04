@@ -1,221 +1,435 @@
-// src/components/home/HomeTestimonials.tsx
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Star, ChevronLeft, ChevronRight, Play, Pause, Building, TrendingUp, MapPin, Briefcase, Quote } from 'lucide-react';
-import type { Testimonial } from '@/data/home/homeData';
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
+import type { TestimonialImage } from "@/data/home/homeData";
 
 interface HomeTestimonialsProps {
-    testimonials: Testimonial[];
+    testimonialImages: TestimonialImage[];
 }
 
-export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonials }) => {
-    const [current, setCurrent] = useState(0);
+// ── Bell-arc slot definitions ────────────────────────────────────────────────
+type PhotoSlot = {
+    col: "A" | "B" | "C" | "D";
+    top: number;
+    w: number;
+    h: number;
+    rotate: number;
+};
+
+// Desktop: 520px tall container, 300px side panels
+const CONTAINER_H = 520;
+
+const SLOTS: PhotoSlot[] = [
+    { col: "A", top:  60, w: 118, h: 148, rotate: -5 },
+    { col: "A", top: 220, w: 126, h: 158, rotate: -3 },
+    { col: "A", top: 370, w: 112, h: 140, rotate: -4 },
+    { col: "B", top:  10, w: 120, h: 152, rotate:  3 },
+    { col: "B", top: 180, w: 114, h: 144, rotate:  2 },
+    { col: "C", top:  10, w: 120, h: 152, rotate: -3 },
+    { col: "C", top: 180, w: 114, h: 144, rotate: -2 },
+    { col: "D", top:  60, w: 118, h: 148, rotate:  5 },
+    { col: "D", top: 220, w: 126, h: 158, rotate:  3 },
+    { col: "D", top: 370, w: 112, h: 140, rotate:  4 },
+];
+
+const COL_OFFSET: Record<PhotoSlot["col"], number> = {
+    A:   0,
+    B: 138,
+    C: 138,
+    D:   0,
+};
+
+// ── Mobile bell: scaled to 58% ───────────────────────────────────────────────
+// Each bell "page" is two side panels (no center gap — text is fixed overlay)
+// Side panel width: 175px  (fits 2 cols: outer ~68px + inner offset 80px + inner ~70px)
+const MOBILE_SCALE   = 0.58;
+const MOBILE_H       = Math.round(CONTAINER_H * MOBILE_SCALE); // ~301
+const MOBILE_SIDE_W  = 175; // one side panel (left OR right) per bell half
+const MOBILE_BELL_W  = MOBILE_SIDE_W * 2; // one full bell = 350px
+
+const MOBILE_COL_OFFSET: Record<PhotoSlot["col"], number> = {
+    A:  0,
+    B:  Math.round(COL_OFFSET.B * MOBILE_SCALE), // ~80
+    C:  Math.round(COL_OFFSET.C * MOBILE_SCALE),
+    D:  0,
+};
+
+// Scale slot sizes
+const mobileScale = (s: PhotoSlot): PhotoSlot => ({
+    ...s,
+    top: Math.round(s.top * MOBILE_SCALE),
+    w:   Math.round(s.w   * MOBILE_SCALE),
+    h:   Math.round(s.h   * MOBILE_SCALE),
+});
+
+const M_SLOTS = SLOTS.map(mobileScale);
+
+// ── Render one full mobile bell (left + right panels side by side) ───────────
+// imgSet: 10 images mapped to the 10 slots (A×3, B×2, C×2, D×3)
+function MobileBell({
+                        imgSet,
+                        isVisible,
+                        delayOffset = 0,
+                    }: {
+    imgSet: TestimonialImage[];
+    isVisible: boolean;
+    delayOffset?: number;
+}) {
+    const withImgs = M_SLOTS.map((s, i) => ({
+        ...s,
+        img: imgSet[i % imgSet.length],
+    }));
+
+    const leftSlots  = withImgs.filter(s => s.col === "A" || s.col === "B");
+    const rightSlots = withImgs.filter(s => s.col === "C" || s.col === "D");
+
+    const card = (
+        s: (typeof withImgs)[0],
+        i: number,
+        pos: React.CSSProperties,
+        delay: number
+    ) => (
+        <div
+            key={i}
+            className="absolute overflow-hidden rounded-xl border border-white/10 transition-all duration-700"
+            style={{
+                ...pos,
+                width:  s.w,
+                height: s.h,
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible
+                    ? `rotate(${s.rotate}deg) translateY(0px)`
+                    : `rotate(${s.rotate}deg) translateY(30px)`,
+                transitionDelay: `${delay}ms`,
+                boxShadow: "0 6px 24px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4)",
+            }}
+        >
+            <Image
+                src={s.img.image}
+                alt={`Client ${s.img.id}`}
+                fill
+                className="object-cover"
+                sizes="100px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        </div>
+    );
+
+    return (
+        // One bell = left panel + right panel, no center gap (text overlays that space)
+        <div
+            className="relative flex-shrink-0"
+            style={{ width: MOBILE_BELL_W, height: MOBILE_H }}
+        >
+            {/* LEFT panel */}
+            <div className="absolute" style={{ left: 0, top: 0, width: MOBILE_SIDE_W, height: MOBILE_H, position: "relative" }}>
+                <div style={{ position: "relative", width: MOBILE_SIDE_W, height: MOBILE_H }}>
+                    {leftSlots.map((s, i) =>
+                        card(s, i, {
+                            top:  s.top,
+                            left: s.col === "A" ? MOBILE_COL_OFFSET.A : MOBILE_COL_OFFSET.B,
+                        }, delayOffset + i * 70)
+                    )}
+                </div>
+            </div>
+
+            {/* RIGHT panel */}
+            <div className="absolute" style={{ right: 0, top: 0, width: MOBILE_SIDE_W, height: MOBILE_H }}>
+                <div style={{ position: "relative", width: MOBILE_SIDE_W, height: MOBILE_H }}>
+                    {rightSlots.map((s, i) =>
+                        card(s, i, {
+                            top:   s.top,
+                            right: s.col === "D" ? MOBILE_COL_OFFSET.D : MOBILE_COL_OFFSET.C,
+                        }, delayOffset + (i + 5) * 70)
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialImages }) => {
+    const sectionRef  = useRef<HTMLElement>(null);
+    const scrollRef   = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(true);
-    const [isMobile, setIsMobile] = useState(false);
-
-    const sectionRef = useRef<HTMLElement>(null);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 640);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) setIsVisible(true);
-        }, { threshold: 0.1, rootMargin: '50px' });
-
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+            { threshold: 0.08 }
+        );
         if (sectionRef.current) observer.observe(sectionRef.current);
         return () => observer.disconnect();
     }, []);
 
+    // Snap-scroll: show scroll hint dots
+    const [activeBell, setActiveBell] = useState(0);
+    const BELL_COUNT = 3; // 3 independent bell "pages"
+
     useEffect(() => {
-        if (isPlaying) {
-            intervalRef.current = setInterval(() => {
-                setCurrent((prev) => (prev + 1) % testimonials.length);
-            }, isMobile ? 8000 : 6000);
-        } else {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, [isPlaying, testimonials.length, isMobile]);
+        const el = scrollRef.current;
+        if (!el) return;
+        const onScroll = () => {
+            const idx = Math.round(el.scrollLeft / MOBILE_BELL_W);
+            setActiveBell(Math.min(idx, BELL_COUNT - 1));
+        };
+        el.addEventListener("scroll", onScroll, { passive: true });
+        return () => el.removeEventListener("scroll", onScroll);
+    }, []);
 
-    const next = useCallback(() => setCurrent((prev) => (prev + 1) % testimonials.length), [testimonials.length]);
-    const prev = useCallback(() => setCurrent((p) => (p - 1 + testimonials.length) % testimonials.length), [testimonials.length]);
-    const togglePlay = useCallback(() => setIsPlaying(p => !p), []);
-    const goTo = useCallback((index: number) => setCurrent(index), []);
+    // Desktop slots
+    const slots      = SLOTS.map((s, i) => ({ ...s, img: testimonialImages[i % testimonialImages.length] }));
+    const leftSlots  = slots.filter(s => s.col === "A" || s.col === "B");
+    const rightSlots = slots.filter(s => s.col === "C" || s.col === "D");
 
-    const data = testimonials[current];
+    // Shuffle image sets slightly for each bell so they look different
+    const bellImgSets = Array.from({ length: BELL_COUNT }, (_, b) => {
+        const offset = b * 3;
+        return Array.from({ length: 10 }, (_, i) =>
+            testimonialImages[(i + offset) % testimonialImages.length]
+        );
+    });
 
     return (
-        <section ref={sectionRef} className="relative py-16 md:py-20 lg:py-24 xl:py-28 bg-black overflow-hidden">
-            <div className="relative z-10 max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section
+            ref={sectionRef}
+            className="relative bg-black overflow-hidden py-20 md:py-28 lg:py-32"
+        >
+            {/* Dot-grid */}
+            <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                style={{
+                    backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                }}
+            />
+            {/* Radial vignette */}
+            <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                    background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, black 100%)",
+                }}
+            />
 
-                {/* Header */}
-                <div className={`text-center mb-12 lg:mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                    <div className="inline-block mb-4">
-            <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-semibold tracking-wider uppercase border border-gray-700">
-              Client Success Stories
+            {/* ══════════ DESKTOP lg+ ══════════ */}
+            <div className="relative z-10 hidden lg:block max-w-7xl mx-auto px-6">
+                <div
+                    className="grid items-center"
+                    style={{ gridTemplateColumns: "300px 1fr 300px", minHeight: CONTAINER_H }}
+                >
+                    {/* LEFT bell */}
+                    <div className="relative" style={{ height: CONTAINER_H }}>
+                        {leftSlots.map((s, i) => (
+                            <div
+                                key={i}
+                                className="absolute overflow-hidden rounded-2xl border border-white/10 transition-all duration-700"
+                                style={{
+                                    top: s.top,
+                                    left: s.col === "A" ? COL_OFFSET.A : COL_OFFSET.B,
+                                    width: s.w, height: s.h,
+                                    opacity: isVisible ? 1 : 0,
+                                    transform: isVisible
+                                        ? `rotate(${s.rotate}deg) translateY(0px)`
+                                        : `rotate(${s.rotate}deg) translateY(40px)`,
+                                    transitionDelay: `${i * 90}ms`,
+                                    boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)",
+                                }}
+                            >
+                                <Image src={s.img.image} alt={`Client ${s.img.id}`} fill className="object-cover" sizes="160px" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* CENTER text */}
+                    <div
+                        className="text-center flex flex-col items-center gap-5 px-6 transition-all duration-1000"
+                        style={{
+                            opacity: isVisible ? 1 : 0,
+                            transform: isVisible ? "translateY(0px)" : "translateY(24px)",
+                            transitionDelay: "200ms",
+                            paddingTop: "60px",
+                        }}
+                    >
+            <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-gray-400 text-xs tracking-widest uppercase font-medium">
+              Testimonials
             </span>
-                    </div>
-                    <h2 className={`font-black mb-4 tracking-tight leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl lg:text-5xl xl:text-6xl'}`}>
-                        <span className="bg-gradient-to-r from-white via-gray-300 to-white bg-clip-text text-transparent">What Our</span>
-                        <br />
-                        <span className="text-gray-700 font-black">CLIENTS SAY</span>
-                    </h2>
-                    <p className={`text-gray-400 max-w-3xl mx-auto leading-relaxed ${isMobile ? 'text-base px-4' : 'text-lg'}`}>
-                        See how SmartKode has transformed businesses across industries with cutting-edge AI, web development, and data solutions.
-                    </p>
-                </div>
-
-                {/* Testimonial Card */}
-                <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-
-                    {/* Mobile & Medium Screens */}
-                    <div className={`max-w-5xl mx-auto ${isMobile ? 'block lg:hidden' : 'hidden'}`}>
-                        <div className="bg-gray-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border border-gray-800 relative shadow-2xl mx-2 sm:mx-0">
-                            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 opacity-5">
-                                <Quote className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-white" />
-                            </div>
-
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-6">
-                                <div className="flex items-center space-x-4">
-                                    <div className="relative">
-                                        <Image src={data.image} alt={data.name} width={80} height={80} className="w-16 h-16 md:w-20 md:h-20 rounded-full border-3 border-gray-700 object-cover" loading="lazy" />
-                                        <div className="absolute -bottom-1 -right-1 bg-gray-700 text-white p-1.5 rounded-full">
-                                            <Building className="w-3 h-3" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">{data.name}</h3>
-                                        <p className="text-gray-400 font-semibold text-sm md:text-base">{data.role}</p>
-                                        <p className="text-gray-500 text-sm md:text-base">{data.company}</p>
-                                    </div>
-                                </div>
-
-                                <div className="text-center md:text-right">
-                                    <div className="flex justify-center md:justify-end mb-3">
-                                        {Array.from({ length: data.rating }, (_, i) => (
-                                            <Star key={i} className="w-5 h-5 text-white fill-current mr-1" />
-                                        ))}
-                                    </div>
-                                    <span className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-semibold border border-gray-700">{data.highlight}</span>
-                                </div>
-                            </div>
-
-                            <blockquote className="text-white text-base sm:text-lg md:text-xl leading-relaxed font-medium mb-6 sm:mb-8 relative z-10 break-words">
-                                &quot;{data.content}&quot;
-                            </blockquote>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                                {[
-                                    { icon: Briefcase, label: 'Project', value: data.project },
-                                    { icon: TrendingUp, label: 'Result', value: data.result },
-                                    { icon: MapPin, label: 'Location', value: data.location.split(',')[0] }
-                                ].map((item, i) => (
-                                    <div key={i} className="bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700">
-                                        <div className="flex items-center text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">
-                                            <item.icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
-                                            {item.label}
-                                        </div>
-                                        <div className="text-white font-semibold text-sm sm:text-base leading-tight">{item.value}</div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="flex items-center justify-center">
-                                <div className="flex space-x-2">
-                                    {testimonials.map((_, i) => (
-                                        <button key={i} onClick={() => goTo(i)} className={`w-3 h-3 rounded-full transition-all duration-300 ${i === current ? 'bg-white' : 'bg-gray-700 hover:bg-gray-600'}`} />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <h2 className="text-5xl xl:text-6xl font-bold leading-tight tracking-tight text-white">
+                            Trusted by leaders
+                            <br />
+                            <span className="text-gray-500 font-normal">from various industries</span>
+                        </h2>
+                        <p className="text-gray-400 text-base leading-relaxed max-w-xs">
+                            Learn why professionals trust our solutions to complete their customer journeys.
+                        </p>
+                        <Link
+                            href="/contact"
+                            className="inline-flex items-center gap-2 mt-2 bg-white text-black px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 group"
+                        >
+                            Read Success Stories
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                        </Link>
                     </div>
 
-                    {/* Large Screens */}
-                    <div className={`max-w-5xl mx-auto ${isMobile ? 'hidden' : 'hidden lg:block'}`}>
-                        <div className="gap-8 lg:gap-10 items-start grid lg:grid-cols-5">
-
-                            <div className="order-2 lg:order-1 lg:col-span-2">
-                                <div className="bg-gray-800 rounded-2xl p-6 border border-gray-800 text-center lg:sticky lg:top-8">
-                                    <div className="relative mb-6">
-                                        <Image src={data.image} alt={data.name} width={96} height={96} className="w-20 h-20 lg:w-24 lg:h-24 rounded-full mx-auto border-4 border-gray-800 object-cover" loading="lazy" />
-                                        <div className="absolute -bottom-1 -right-1 bg-white text-black p-1.5 rounded-full">
-                                            <Building className="w-4 h-4" />
-                                        </div>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-white mb-1">{data.name}</h3>
-                                    <p className="text-gray-400 font-semibold mb-1 text-sm">{data.role}</p>
-                                    <p className="text-gray-500 mb-4 text-sm">{data.company}</p>
-                                    <div className="flex justify-center mb-4">
-                                        {Array.from({ length: data.rating }, (_, i) => (
-                                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                                        ))}
-                                    </div>
-                                    <div className="space-y-3">
-                                        {[
-                                            { icon: Briefcase, label: 'Industry', value: data.industry },
-                                            { icon: MapPin, label: 'Location', value: data.location },
-                                            { icon: TrendingUp, label: 'Result', value: data.result }
-                                        ].map((item, i) => (
-                                            <div key={i} className="bg-gray-700 rounded-lg p-3">
-                                                <div className="text-gray-400 text-xs mb-1 flex items-center justify-center">
-                                                    <item.icon className="w-3 h-3 mr-1" />
-                                                    {item.label}
-                                                </div>
-                                                <div className="text-white font-semibold text-sm">{item.value}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                    {/* RIGHT bell */}
+                    <div className="relative" style={{ height: CONTAINER_H }}>
+                        {rightSlots.map((s, i) => (
+                            <div
+                                key={i}
+                                className="absolute overflow-hidden rounded-2xl border border-white/10 transition-all duration-700"
+                                style={{
+                                    top: s.top,
+                                    right: s.col === "D" ? COL_OFFSET.D : COL_OFFSET.C,
+                                    width: s.w, height: s.h,
+                                    opacity: isVisible ? 1 : 0,
+                                    transform: isVisible
+                                        ? `rotate(${s.rotate}deg) translateY(0px)`
+                                        : `rotate(${s.rotate}deg) translateY(40px)`,
+                                    transitionDelay: `${(i + 5) * 90}ms`,
+                                    boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)",
+                                }}
+                            >
+                                <Image src={s.img.image} alt={`Client ${s.img.id}`} fill className="object-cover" sizes="160px" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                             </div>
-
-                            <div className="order-1 lg:order-2 lg:col-span-3">
-                                <div className="bg-gray-800 rounded-2xl p-6 lg:p-8 border border-gray-800 relative">
-                                    <div className="mb-6 pt-8">
-                                        <span className="bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-bold">{data.highlight}</span>
-                                    </div>
-                                    <blockquote className="text-white leading-relaxed font-medium mb-6 relative z-10 text-lg lg:text-xl">
-                                        &quot;{data.content}&quot;
-                                    </blockquote>
-                                    <div className="mb-6">
-                                        <h4 className="font-bold text-white mb-2 text-lg">Project: {data.project}</h4>
-                                        <div className="flex items-center text-gray-400">
-                                            <TrendingUp className="w-4 h-4 mr-2 flex-shrink-0" />
-                                            <span>Result: {data.result}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-center space-x-3">
-                                            {[
-                                                { onClick: prev, icon: ChevronLeft, label: 'Previous' },
-                                                { onClick: togglePlay, icon: isPlaying ? Pause : Play, label: isPlaying ? 'Pause' : 'Play' },
-                                                { onClick: next, icon: ChevronRight, label: 'Next' }
-                                            ].map((btn, i) => (
-                                                <button key={i} onClick={btn.onClick} className="p-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors duration-300" aria-label={btn.label} type="button">
-                                                    <btn.icon className="w-5 h-5 text-white" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <div className="flex space-x-2">
-                                            {testimonials.map((_, i) => (
-                                                <button key={i} onClick={() => goTo(i)} className={`w-3 h-3 rounded-full transition-all duration-300 ${i === current ? 'bg-white' : 'bg-gray-700 hover:bg-gray-600'}`} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
+
+            {/* ══════════ MOBILE < lg ══════════ */}
+            <div className="lg:hidden relative z-10 flex flex-col items-center">
+
+                {/* 1 ── "Testimonials" badge — fixed at very top, never scrolls */}
+                <div
+                    className="mb-6 transition-all duration-700"
+                    style={{
+                        opacity: isVisible ? 1 : 0,
+                        transform: isVisible ? "translateY(0)" : "translateY(-12px)",
+                        transitionDelay: "80ms",
+                    }}
+                >
+          <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-gray-400 text-xs tracking-widest uppercase font-medium">
+            Testimonials
+          </span>
+                </div>
+
+                {/* 2 ── Scrollable bell strip + fixed text overlay ── */}
+                <div
+                    className="relative w-full"
+                    style={{ height: MOBILE_H }}
+                >
+                    {/* Horizontally scrollable bell images */}
+                    <div
+                        ref={scrollRef}
+                        className="absolute inset-0 overflow-x-auto overflow-y-hidden"
+                        style={{
+                            scrollSnapType: "x mandatory",
+                            WebkitOverflowScrolling: "touch",
+                            scrollbarWidth: "none",
+                            msOverflowStyle: "none",
+                        }}
+                    >
+                        {/* Inner track: all bells side-by-side */}
+                        <div
+                            className="flex"
+                            style={{ width: MOBILE_BELL_W * BELL_COUNT, height: MOBILE_H }}
+                        >
+                            {bellImgSets.map((imgSet, b) => (
+                                <div
+                                    key={b}
+                                    style={{
+                                        width: MOBILE_BELL_W,
+                                        height: MOBILE_H,
+                                        scrollSnapAlign: "start",
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <MobileBell
+                                        imgSet={imgSet}
+                                        isVisible={isVisible}
+                                        delayOffset={b * 40}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── Fixed text overlay — centered over bell, doesn't scroll ── */}
+                    <div
+                        className="absolute inset-0 flex flex-col items-center justify-end pointer-events-none"
+                        style={{ paddingBottom: 24, zIndex: 10 }}
+                    >
+                        {/* Semi-transparent backdrop so text reads over any images */}
+                        <div
+                            className="flex flex-col items-center gap-3 px-6 py-5 rounded-3xl pointer-events-auto"
+                            style={{
+                                background: "radial-gradient(ellipse 120% 100% at 50% 100%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)",
+                                opacity: isVisible ? 1 : 0,
+                                transition: "opacity 0.8s ease 0.4s",
+                            }}
+                        >
+                            <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white text-center">
+                                Trusted by leaders
+                                <br />
+                                <span className="text-gray-400 font-normal">from various industries</span>
+                            </h2>
+                            <p className="text-gray-400 text-xs sm:text-sm leading-relaxed max-w-[220px] text-center">
+                                Learn why professionals trust our solutions to complete their customer journeys.
+                            </p>
+                            <Link
+                                href="/contact"
+                                className="inline-flex items-center gap-1.5 bg-white text-black px-5 py-2 rounded-full text-xs font-semibold hover:bg-gray-100 transition-colors duration-200 group"
+                            >
+                                Read Success Stories
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Left/right edge fades — hint that images are scrollable */}
+                    <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent z-20" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black to-transparent z-20" />
+                </div>
+
+                {/* 3 ── Dot indicators — show which bell page is active ── */}
+                <div
+                    className="flex gap-2 mt-5 transition-all duration-700"
+                    style={{ opacity: isVisible ? 1 : 0, transitionDelay: "600ms" }}
+                >
+                    {Array.from({ length: BELL_COUNT }).map((_, i) => (
+                        <button
+                            key={i}
+                            aria-label={`Bell page ${i + 1}`}
+                            onClick={() => {
+                                scrollRef.current?.scrollTo({
+                                    left: i * MOBILE_BELL_W,
+                                    behavior: "smooth",
+                                });
+                            }}
+                            style={{
+                                width:  i === activeBell ? 20 : 6,
+                                height: 6,
+                                borderRadius: 3,
+                                background: i === activeBell ? "#ffffff" : "rgba(255,255,255,0.25)",
+                                transition: "all 0.3s ease",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 0,
+                            }}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            <style>{`
+        /* Hide scrollbar on mobile bell strip */
+        .lg\\:hidden div::-webkit-scrollbar { display: none; }
+      `}</style>
         </section>
     );
 };
