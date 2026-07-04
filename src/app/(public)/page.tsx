@@ -6,16 +6,14 @@ import Navbar from "./Header/page";
 import Footer from "./Footer/page";
 import { HomeHero } from "@/components/home/HomeHero";
 import ServicesSection from "./Services/page";
-import { HomeTrustedCompanies } from "@/components/home/HomeTrustedCompanies";
 import { HomeApproach } from "@/components/home/HomeApproach";
 import { HomeTestimonials } from "@/components/home/HomeTestimonials";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 import {
     heroRotatingTexts,
     approachSteps,
-    testimonials,
+    testimonialImages,
     faqs,
-    trustedCompanies
 } from "@/data/home/homeData";
 
 export default function HomePage() {
@@ -71,9 +69,8 @@ export default function HomePage() {
                 <Navbar />
                 <HomeHero rotatingTexts={heroRotatingTexts} />
                 <ServicesSection />
-                <HomeTrustedCompanies companies={trustedCompanies} />
                 <HomeApproach steps={approachSteps} />
-                <HomeTestimonials testimonials={testimonials} />
+                <HomeTestimonials testimonialImages={testimonialImages} />
                 <HomeFAQ faqs={faqs} />
                 <Footer />
             </main>
