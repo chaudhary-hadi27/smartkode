@@ -79,27 +79,27 @@ export interface TestimonialImage {
 export const testimonialImages: TestimonialImage[] = [
     {
         id: 1,
-        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783160462/WhatsApp_Image_2026-07-04_at_3.18.23_PM_oaekzy.jpg?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 2,
-        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783160809/WhatsApp_Image_2026-07-04_at_3.25.59_PM_ypcmqc.jpg?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 3,
-        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783161964/WhatsApp_Image_2026-07-04_at_3.45.48_PM_dnan8x.jpg?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 4,
-        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783161705/WhatsApp_Image_2026-07-04_at_3.41.03_PM_ziogly.jpg?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 5,
-        image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783161479/WhatsApp_Image_2026-07-04_at_3.35.48_PM_tjqxor.jpg?w=300&h=400&fit=crop&crop=face',
     },
     {
         id: 6,
-        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=400&fit=crop&crop=face',
+        image: 'https://res.cloudinary.com/my5r7e4y/image/upload/v1783161171/WhatsApp_Image_2026-07-04_at_3.32.12_PM_k9fzng.jpg?w=300&h=400&fit=crop&crop=face',
     },
     // Add more images below — they will auto-fill into the bell arc:
     // { id: 7, image: 'https://...' },

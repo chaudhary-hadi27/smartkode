@@ -263,14 +263,14 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
                             <br />
                             <span className="text-gray-500 font-normal">from various industries</span>
                         </h2>
-                        <p className="text-gray-400 text-base leading-relaxed max-w-xs">
-                            Learn why professionals trust our solutions to complete their customer journeys.
-                        </p>
+                        {/*<p className="text-gray-400 text-base leading-relaxed max-w-xs">*/}
+                        {/*    Learn why professionals trust our solutions to complete their customer journeys.*/}
+                        {/*</p>*/}
                         <Link
                             href="/contact"
                             className="inline-flex items-center gap-2 mt-2 bg-white text-black px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 group"
                         >
-                            Read Success Stories
+                            Let's Connect
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
                         </Link>
                     </div>
