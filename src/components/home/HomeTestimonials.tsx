@@ -43,12 +43,12 @@ const COL_OFFSET: Record<PhotoSlot["col"], number> = {
 };
 
 // ── Mobile bell: scaled to 58% ───────────────────────────────────────────────
-// Each bell "page" is two side panels (no center gap — text is fixed overlay)
-// Side panel width: 175px  (fits 2 cols: outer ~68px + inner offset 80px + inner ~70px)
+// Each bell "page" is two side panels (no center gap — text lives below, not over the images)
 const MOBILE_SCALE   = 0.58;
 const MOBILE_H       = Math.round(CONTAINER_H * MOBILE_SCALE); // ~301
 const MOBILE_SIDE_W  = 175; // one side panel (left OR right) per bell half
 const MOBILE_BELL_W  = MOBILE_SIDE_W * 2; // one full bell = 350px
+const SLOTS_PER_BELL = 10;
 
 const MOBILE_COL_OFFSET: Record<PhotoSlot["col"], number> = {
     A:  0,
@@ -68,7 +68,7 @@ const mobileScale = (s: PhotoSlot): PhotoSlot => ({
 const M_SLOTS = SLOTS.map(mobileScale);
 
 // ── Render one full mobile bell (left + right panels side by side) ───────────
-// imgSet: 10 images mapped to the 10 slots (A×3, B×2, C×2, D×3)
+// imgSet: up to 10 images mapped to the 10 slots (A×3, B×2, C×2, D×3)
 function MobileBell({
                         imgSet,
                         isVisible,
@@ -78,6 +78,9 @@ function MobileBell({
     isVisible: boolean;
     delayOffset?: number;
 }) {
+    // Always fill the full bell shape (10 slots), same as desktop — if the
+    // chunk handed in has fewer than 10 images, wrap around within that
+    // chunk rather than leaving slots empty.
     const withImgs = M_SLOTS.map((s, i) => ({
         ...s,
         img: imgSet[i % imgSet.length],
@@ -119,21 +122,19 @@ function MobileBell({
     );
 
     return (
-        // One bell = left panel + right panel, no center gap (text overlays that space)
+        // One bell = left panel + right panel, no center gap
         <div
             className="relative flex-shrink-0"
             style={{ width: MOBILE_BELL_W, height: MOBILE_H }}
         >
             {/* LEFT panel */}
-            <div className="absolute" style={{ left: 0, top: 0, width: MOBILE_SIDE_W, height: MOBILE_H, position: "relative" }}>
-                <div style={{ position: "relative", width: MOBILE_SIDE_W, height: MOBILE_H }}>
-                    {leftSlots.map((s, i) =>
-                        card(s, i, {
-                            top:  s.top,
-                            left: s.col === "A" ? MOBILE_COL_OFFSET.A : MOBILE_COL_OFFSET.B,
-                        }, delayOffset + i * 70)
-                    )}
-                </div>
+            <div style={{ position: "relative", width: MOBILE_SIDE_W, height: MOBILE_H }}>
+                {leftSlots.map((s, i) =>
+                    card(s, i, {
+                        top:  s.top,
+                        left: s.col === "A" ? MOBILE_COL_OFFSET.A : MOBILE_COL_OFFSET.B,
+                    }, delayOffset + i * 70)
+                )}
             </div>
 
             {/* RIGHT panel */}
@@ -166,9 +167,12 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
         return () => observer.disconnect();
     }, []);
 
-    // Snap-scroll: show scroll hint dots
+    // How many bell "pages" are actually needed to show every image once,
+    // instead of always forcing 3 pages and repeating the same photos.
+    const BELL_COUNT = Math.max(1, Math.ceil(testimonialImages.length / SLOTS_PER_BELL));
+
+    // Snap-scroll: show scroll hint dots (only relevant when there's more than 1 page)
     const [activeBell, setActiveBell] = useState(0);
-    const BELL_COUNT = 3; // 3 independent bell "pages"
 
     useEffect(() => {
         const el = scrollRef.current;
@@ -179,19 +183,24 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
         };
         el.addEventListener("scroll", onScroll, { passive: true });
         return () => el.removeEventListener("scroll", onScroll);
-    }, []);
+    }, [BELL_COUNT]);
 
     // Desktop slots
     const slots      = SLOTS.map((s, i) => ({ ...s, img: testimonialImages[i % testimonialImages.length] }));
     const leftSlots  = slots.filter(s => s.col === "A" || s.col === "B");
     const rightSlots = slots.filter(s => s.col === "C" || s.col === "D");
 
-    // Shuffle image sets slightly for each bell so they look different
+    // Split images into distinct, non-repeating chunks — one chunk per bell page.
+    // Only the very last page falls back to wrapping (from the start of the
+    // list) if there aren't quite enough images left to fill it.
     const bellImgSets = Array.from({ length: BELL_COUNT }, (_, b) => {
-        const offset = b * 3;
-        return Array.from({ length: 10 }, (_, i) =>
-            testimonialImages[(i + offset) % testimonialImages.length]
-        );
+        const start = b * SLOTS_PER_BELL;
+        const chunk = testimonialImages.slice(start, start + SLOTS_PER_BELL);
+        if (chunk.length < SLOTS_PER_BELL && testimonialImages.length > chunk.length) {
+            const needed = SLOTS_PER_BELL - chunk.length;
+            return [...chunk, ...testimonialImages.slice(0, needed)];
+        }
+        return chunk;
     });
 
     return (
@@ -263,9 +272,6 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
                             <br />
                             <span className="text-gray-500 font-normal">from various industries</span>
                         </h2>
-                        {/*<p className="text-gray-400 text-base leading-relaxed max-w-xs">*/}
-                        {/*    Learn why professionals trust our solutions to complete their customer journeys.*/}
-                        {/*</p>*/}
                         <Link
                             href="/contact"
                             className="inline-flex items-center gap-2 mt-2 bg-white text-black px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 group"
@@ -304,7 +310,7 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
             {/* ══════════ MOBILE < lg ══════════ */}
             <div className="lg:hidden relative z-10 flex flex-col items-center">
 
-                {/* 1 ── "Testimonials" badge — fixed at very top, never scrolls */}
+                {/* 1 ── "Testimonials" badge */}
                 <div
                     className="mb-6 transition-all duration-700"
                     style={{
@@ -318,26 +324,19 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
           </span>
                 </div>
 
-                {/* 2 ── Scrollable bell strip + fixed text overlay ── */}
-                <div
-                    className="relative w-full"
-                    style={{ height: MOBILE_H }}
-                >
-                    {/* Horizontally scrollable bell images */}
+                {/* 2 ── Scrollable bell strip (images only — no text overlay) ── */}
+                <div className="relative w-full" style={{ height: MOBILE_H }}>
                     <div
                         ref={scrollRef}
-                        className="absolute inset-0 overflow-x-auto overflow-y-hidden"
+                        className="absolute inset-0 overflow-x-auto overflow-y-hidden no-scrollbar"
                         style={{
                             scrollSnapType: "x mandatory",
                             WebkitOverflowScrolling: "touch",
-                            scrollbarWidth: "none",
-                            msOverflowStyle: "none",
                         }}
                     >
-                        {/* Inner track: all bells side-by-side */}
                         <div
-                            className="flex"
-                            style={{ width: MOBILE_BELL_W * BELL_COUNT, height: MOBILE_H }}
+                            className="flex justify-center"
+                            style={{ width: MOBILE_BELL_W * BELL_COUNT, height: MOBILE_H, margin: "0 auto" }}
                         >
                             {bellImgSets.map((imgSet, b) => (
                                 <div
@@ -359,76 +358,73 @@ export const HomeTestimonials: React.FC<HomeTestimonialsProps> = ({ testimonialI
                         </div>
                     </div>
 
-                    {/* ── Fixed text overlay — centered over bell, doesn't scroll ── */}
-                    <div
-                        className="absolute inset-0 flex flex-col items-center justify-end pointer-events-none"
-                        style={{ paddingBottom: 24, zIndex: 10 }}
-                    >
-                        {/* Semi-transparent backdrop so text reads over any images */}
-                        <div
-                            className="flex flex-col items-center gap-3 px-6 py-5 rounded-3xl pointer-events-auto"
-                            style={{
-                                background: "radial-gradient(ellipse 120% 100% at 50% 100%, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)",
-                                opacity: isVisible ? 1 : 0,
-                                transition: "opacity 0.8s ease 0.4s",
-                            }}
-                        >
-                            <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white text-center">
-                                Trusted by leaders
-                                <br />
-                                <span className="text-gray-400 font-normal">from various industries</span>
-                            </h2>
-                            <p className="text-gray-400 text-xs sm:text-sm leading-relaxed max-w-[220px] text-center">
-                                Learn why professionals trust our solutions to complete their customer journeys.
-                            </p>
-                            <Link
-                                href="/contact"
-                                className="inline-flex items-center gap-1.5 bg-white text-black px-5 py-2 rounded-full text-xs font-semibold hover:bg-gray-100 transition-colors duration-200 group"
-                            >
-                                Read Success Stories
-                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* Left/right edge fades — hint that images are scrollable */}
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent z-20" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black to-transparent z-20" />
+                    {/* Edge fades hint that images scroll — only shown when there's more than one page */}
+                    {BELL_COUNT > 1 && (
+                        <>
+                            <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black to-transparent z-20" />
+                            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black to-transparent z-20" />
+                        </>
+                    )}
                 </div>
 
-                {/* 3 ── Dot indicators — show which bell page is active ── */}
+                {/* 3 ── Dot indicators — only when there's more than one page ── */}
+                {BELL_COUNT > 1 && (
+                    <div
+                        className="flex gap-2 mt-4 transition-all duration-700"
+                        style={{ opacity: isVisible ? 1 : 0, transitionDelay: "500ms" }}
+                    >
+                        {Array.from({ length: BELL_COUNT }).map((_, i) => (
+                            <button
+                                key={i}
+                                aria-label={`Bell page ${i + 1}`}
+                                onClick={() => {
+                                    scrollRef.current?.scrollTo({
+                                        left: i * MOBILE_BELL_W,
+                                        behavior: "smooth",
+                                    });
+                                }}
+                                style={{
+                                    width:  i === activeBell ? 20 : 6,
+                                    height: 6,
+                                    borderRadius: 3,
+                                    background: i === activeBell ? "#ffffff" : "rgba(255,255,255,0.25)",
+                                    transition: "all 0.3s ease",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    padding: 0,
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* 4 ── Text block below the images — mirrors desktop exactly (no paragraph) ── */}
                 <div
-                    className="flex gap-2 mt-5 transition-all duration-700"
-                    style={{ opacity: isVisible ? 1 : 0, transitionDelay: "600ms" }}
+                    className="text-center flex flex-col items-center gap-4 px-6 mt-8 transition-all duration-1000"
+                    style={{
+                        opacity: isVisible ? 1 : 0,
+                        transform: isVisible ? "translateY(0px)" : "translateY(24px)",
+                        transitionDelay: "300ms",
+                    }}
                 >
-                    {Array.from({ length: BELL_COUNT }).map((_, i) => (
-                        <button
-                            key={i}
-                            aria-label={`Bell page ${i + 1}`}
-                            onClick={() => {
-                                scrollRef.current?.scrollTo({
-                                    left: i * MOBILE_BELL_W,
-                                    behavior: "smooth",
-                                });
-                            }}
-                            style={{
-                                width:  i === activeBell ? 20 : 6,
-                                height: 6,
-                                borderRadius: 3,
-                                background: i === activeBell ? "#ffffff" : "rgba(255,255,255,0.25)",
-                                transition: "all 0.3s ease",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: 0,
-                            }}
-                        />
-                    ))}
+                    <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white">
+                        Trusted by leaders
+                        <br />
+                        <span className="text-gray-500 font-normal">from various industries</span>
+                    </h2>
+                    <Link
+                        href="/contact"
+                        className="inline-flex items-center gap-2 mt-1 bg-white text-black px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 group"
+                    >
+                        Let's Connect
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                    </Link>
                 </div>
             </div>
 
             <style>{`
-        /* Hide scrollbar on mobile bell strip */
-        .lg\\:hidden div::-webkit-scrollbar { display: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
       `}</style>
         </section>
     );
